@@ -16,7 +16,7 @@ source "proxmox-iso" "traininglab-server" {
   #iso_file     = "local:iso/ubuntu_server.iso"    -- uncomment if you want to use local iso file and comment the next four lines
   iso_checksum             = "sha256:45f873de9f8cb637345d6e66a583762730bbea30277ef7b32c9c3bd6700a32b2"
   iso_url                  = "https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-live-server-amd64.iso"
-  iso_storage_pool         = "local"
+  iso_storage_pool         = "local-zfs"
   iso_download_pve = true
 
   communicator             = "ssh"
@@ -41,7 +41,7 @@ source "proxmox-iso" "traininglab-server" {
       "./server/user-data"
       ]
       cd_label = "cidata"
-      iso_storage_pool = "local"
+      iso_storage_pool = "local-zfs"
       unmount = true
   }
 
