@@ -31,10 +31,10 @@ variable "proxmox_api_token" {
 
 variable "storage_name" {
   type = string
-  default = "local-lvm"
+  default = "local-zfs"
 }
 
 variable "netbridge" {
   type = string
-  default = "vmbr1"
+  default = "vmbr0"
 }
