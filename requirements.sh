@@ -36,4 +36,4 @@ requirements
 chmod +x packer/task_templating.sh
 chmod +x terraform/task_terraforming.sh
 
-echo "[+] run the task_templating.sh in packer/"
+echo "[+] download Snare products and place them all in the ansible/snare_products directory. Then run the task_templating.sh in packer/"
