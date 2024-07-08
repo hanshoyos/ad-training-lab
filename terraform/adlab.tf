@@ -49,7 +49,7 @@ locals {
 
 resource "proxmox_virtual_environment_vm" "vm" {
   for_each = {
-    monitoring = local.vm_id_templates.ubuntu
+    Ubuntu = local.vm_id_templates.ubuntu
     DC         = local.vm_id_templates.win2019
     ADCS       = local.vm_id_templates.win2019
     FS         = local.vm_id_templates.win2019
@@ -105,7 +105,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
 output "ansible_inventory" {
   value = templatefile("${path.module}/inventory_hosts.tmpl", {
     ubuntu_ips = {
-      "monitoring" = proxmox_virtual_environment_vm.vm["monitoring"].ipv4_addresses[1][0]
+      "ubuntu" = proxmox_virtual_environment_vm.vm["ubuntu"].ipv4_addresses[1][0]
     },
     windows_ips = {
       "DC"  = proxmox_virtual_environment_vm.vm["DC"].ipv4_addresses[0][0]
