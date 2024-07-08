@@ -105,7 +105,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
 output "ansible_inventory" {
   value = templatefile("${path.module}/inventory_hosts.tmpl", {
     ubuntu_ips = {
-      "ubuntu" = proxmox_virtual_environment_vm.vm["ubuntu"].ipv4_addresses[1][0]
+      "Ubuntu" = proxmox_virtual_environment_vm.vm["Ubuntu"].ipv4_addresses[1][0]
     },
     windows_ips = {
       "DC"  = proxmox_virtual_environment_vm.vm["DC"].ipv4_addresses[0][0]
