@@ -1,7 +1,7 @@
 ansible_connection: ssh
 dns_forwarders: 1.1.1.1
 
-domain_short: RED
+domain_short: SnareTraining
 domain_name: '{{ domain_short|lower }}lab.local'
 
 domain_admin_login: '{{ domain_short }}\Administrator'
@@ -12,9 +12,9 @@ safe_mode_pass: SafeModePassword.
 ca_name: '{{ domain_short }}-CA'
 
 # used for vulns
-server_admin: 'jeffadmin'
+server_admin: 'serveradmin'
 web_admin: 'webadmin'
-first_user: 'jacktest'
+first_user: 'snaretest'
 
 first_user_login: '{{ domain_short }}\{{ first_user }}'
 first_user_ssh: '{{ domain_short }}\{{ first_user }}'
