@@ -24,11 +24,6 @@
         domain_admin_password: "{{ domain_admin_password }}"
         state: domain
         reboot: true
-  
-    - name: Set autologon for specific user
-      community.windows.win_auto_logon:
-        username: '{{ server_admin_login }}'
-        password: '{{ server_admin_password }}'
 
     - name: Allow RDP to specific users
       ansible.windows.win_user_right:
