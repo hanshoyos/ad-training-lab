@@ -51,11 +51,11 @@
         users:
         - Administrators
 
-    - name: Misconfiguration - Add jacktest account (ws2 account)
+    - name: Add snaretest account (ws2 account)
       microsoft.ad.user:
         name: '{{ first_user }}'
-        firstname: Test
-        surname: Thandelete
+        firstname: snare
+        surname: test
         password: '{{ first_user_password }}'
         state: present
         domain_username: Administrator
@@ -65,7 +65,7 @@
           - Domain Users
           - Remote Desktop Users
 
-    - name: Misconfiguration - Add webadmin account (web admin account)
+    - name: Add webadmin account (web admin account)
       microsoft.ad.user:
         name: '{{ web_admin }}'
         firstname: WebServer
@@ -79,7 +79,7 @@
           - Domain Users
           - Remote Desktop Users
 
-    - name: Misconfiguration - Add jeffadmin account (fs admin account)
+    - name: Add FSadmin account (fs admin account)
       microsoft.ad.user:
         name: '{{ server_admin }}'
         firstname: FileSystem
