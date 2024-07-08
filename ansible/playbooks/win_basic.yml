@@ -51,6 +51,46 @@
       protocol: tcp
       state: present
       enabled: yes
+
+  - name: Firewall rule to allow Enterprise agent 6161 web console
+    community.windows.win_firewall_rule:
+      name: 6161 in
+      localport: 6161
+      action: allow
+      direction: in
+      protocol: tcp
+      state: present
+      enabled: yes
+
+   - name: Firewall rule to allow SAM standalone 6261 web console
+    community.windows.win_firewall_rule:
+      name: 6261 in
+      localport: 6261
+      action: allow
+      direction: in
+      protocol: tcp
+      state: present
+      enabled: yes
+
+  - name: Firewall rule to allow agent coms to SAM on TCP port 6262
+    community.windows.win_firewall_rule:
+      name: 6262 out
+      localport: 6262
+      action: allow
+      direction: out
+      protocol: tcp
+      state: present
+      enabled: yes
+
+    - name: Firewall rule to allow agent coms to snare server on TCP port 6161
+    community.windows.win_firewall_rule:
+      name: 6161 out
+      localport: 6262
+      action: allow
+      direction: out
+      protocol: tcp
+      state: present
+      enabled: yes
       
   - name: Enable Script Block Logging
     win_regedit:
