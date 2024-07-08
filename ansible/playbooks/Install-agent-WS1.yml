@@ -1,6 +1,6 @@
 ---
 - name: Install Snare Agent on Windows Machines
-  hosts: windows
+  hosts: WS1
   gather_facts: no
   tasks:
     - name: Copy Snare Agent installer to Windows machine
