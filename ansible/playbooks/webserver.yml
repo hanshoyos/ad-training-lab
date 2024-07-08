@@ -40,24 +40,24 @@
         include_management_tools: true
       register: win_feature
     
-    - name: Misconfiguration - Add webadmin to localadmin group
+    - name: Add webadmin to localadmin group
       win_group_membership:
         name: Administrators
         members:
           - '{{ web_admin_login }}'
         state: present
 
-    - name: Misconfiguration - Delete default iis webapp
+    - name: Delete default iis webapp
       win_file:
         path: C:\inetpub\wwwroot
         state: absent
     
-    - name: Misconfiguration - Import a custom webapp
+    - name: Import a custom webapp
       win_copy:
         src: wwwroot/
         dest: C:\inetpub\wwwroot
         
-    - name: Misconfiguration - Define authentication method
+    - name: Define authentication method
       win_shell: |
         Import-Module WebAdministration;
         Set-WebConfigurationProperty -filter /system.webServer/security/authentication/anonymousAuthentication -name enabled -value false -PSPath IIS:\\ -location "Default Web Site"
