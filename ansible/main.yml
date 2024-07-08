@@ -8,9 +8,5 @@
 - import_playbook: playbooks/workstation1.yml
 - import_playbook: playbooks/workstation2.yml
 # linux + monitoring
-- import_playbook: playbooks/monitoring.yml
-- import_playbook: playbooks/wazuh_agent.yml
-- import_playbook: playbooks/sysmon.yml
-# ad vulns
-- import_playbook: playbooks/vulnerable-ad.yml
+#- import_playbook: playbooks/sysmon.yml
 
