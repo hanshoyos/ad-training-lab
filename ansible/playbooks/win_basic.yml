@@ -62,7 +62,7 @@
       state: present
       enabled: yes
 
-   - name: Firewall rule to allow SAM standalone 6261 web console
+  - name: Firewall rule to allow SAM standalone 6261 web console
     community.windows.win_firewall_rule:
       name: 6261 in
       localport: 6261
@@ -82,7 +82,7 @@
       state: present
       enabled: yes
 
-    - name: Firewall rule to allow agent coms to snare server on TCP port 6161
+  - name: Firewall rule to allow agent coms to snare server on TCP port 6161
     community.windows.win_firewall_rule:
       name: 6161 out
       localport: 6262
