@@ -1,0 +1,28 @@
+---
+- name: Install WiX Toolset
+  hosts: FS
+  gather_facts: no
+  tasks:
+    - name: Ensure C:\Temp directory exists
+      ansible.builtin.win_file:
+        path: C:\Temp
+        state: directory
+
+    - name: Download WiX Toolset binaries
+      ansible.builtin.win_get_url:
+        url: https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314-binaries.zip
+        dest: C:\Temp\wix314-binaries.zip
+
+    - name: Unzip WiX Toolset binaries
+      ansible.builtin.win_unzip:
+        src: C:\Temp\wix314-binaries.zip
+        dest: C:\Program Files\wix
+        creates: C:\Program Files\wix\bin
+
+    - name: Ensure WiX is added to the system PATH
+      ansible.builtin.win_environment:
+        state: present
+        name: Path
+        value: C:\Program Files\wix
+        delimiter: ';'
+        level: machine
