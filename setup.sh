@@ -6,6 +6,16 @@ log() {
   echo "$1" | tee -a $LOGFILE
 }
 
+# Update and upgrade system
+log "Updating and upgrading system..."
+sudo apt update && sudo apt upgrade -y
+if [ $? -eq 0 ]; then
+  log "System updated successfully."
+else
+  log "Error: Failed to update system."
+  exit 1
+fi
+
 source_env() {
   if [ -f .env ]; then
     log "Sourcing .env file..."
@@ -19,29 +29,46 @@ source_env() {
 configure_proxmox_users() {
   log "Configuring Proxmox users and roles..."
   read -p "Enter Proxmox User IP: " PROXMOX_USER_IP
-  read -s -p "Enter Proxmox User Password: " PROXMOX_USER_PASSWORD
-  echo
-
-  sshpass -p "$PROXMOX_USER_PASSWORD" ssh root@$PROXMOX_USER_IP << EOF > /tmp/proxmox_output.log
+  read -p "Enter Proxmox User Username: " PROXMOX_USER
+  echo "Enter Proxmox User Password:"
+  
+  ssh $PROXMOX_USER@$PROXMOX_USER_IP << EOF > /tmp/proxmox_output.log 2>&1
 pveum role add provisioner -privs "Datastore.AllocateSpace Datastore.Audit Pool.Allocate Pool.Audit SDN.Use Sys.Audit Sys.Console Sys.Modify VM.Allocate VM.Audit VM.Clone VM.Config.CDROM VM.Config.Cloudinit VM.Config.CPU VM.Config.Disk VM.Config.HWType VM.Config.Memory VM.Config.Network VM.Console VM.Config.Options VM.Migrate VM.Monitor VM.PowerMgmt"
 pveum user add userprovisioner@pve
 pveum aclmod / -user userprovisioner@pve -role provisioner
 pveum user token add userprovisioner@pve provisioner-token --privsep=0
 pveum aclmod /storage/local --user userprovisioner@pve --role PVEDatastoreAdmin --token userprovisioner@pve!provisioner-token
 pveum user token list userprovisioner@pve provisioner-token --output-format=json
+hostname
 EOF
 
-  if [ $? -eq 0 ]; then
-    log "Proxmox user configuration successful."
-    PROXMOX_API_TOKEN=$(grep -oP '(?<="value": ")[^"]*' /tmp/proxmox_output.log)
+  log "SSH command output:"
+  cat /tmp/proxmox_output.log | tee -a $LOGFILE
+  
+  echo "Please copy the API token from the output above."
+  read -p "Have you copied the API token? Type 'yes' to continue: " confirmation
+  if [ "$confirmation" == "yes" ]; then
+    echo "Creating .env file..."
     echo "PROXMOX_API_ID=userprovisioner@pve!provisioner-token" > .env
-    echo "PROXMOX_API_TOKEN=$PROXMOX_API_TOKEN" >> .env
+    echo "PROXMOX_API_TOKEN=" >> .env
     echo "PROXMOX_NODE_IP=$PROXMOX_USER_IP" >> .env
     echo "PROXMOX_NODE_NAME=pve" >> .env
-    log ".env file created successfully."
-    cat .env | tee -a $LOGFILE
+    log ".env file created successfully. Please paste the copied API token in the PROXMOX_API_TOKEN field."
+    nano .env
   else
-    log "Error: Proxmox user configuration failed. Please check your Proxmox settings and try again."
+    log "API token not copied. Exiting..."
+    exit 1
+  fi
+}
+
+download_iso() {
+  local url=$1
+  local filename=$2
+  ssh $PROXMOX_USER@$PROXMOX_NODE_IP "cd /var/lib/vz/template/iso/ && nohup wget -O $filename $url &"
+  if [ $? -eq 0 ]; then
+    log "$filename download initiated."
+  else
+    log "Error: Failed to initiate $filename download."
     exit 1
   fi
 }
@@ -49,7 +76,10 @@ EOF
 download_all_iso_files_proxmox() {
   log "Downloading all ISO files on Proxmox server. This may take a while..."
   source_env
-  sshpass -p "$PROXMOX_USER_PASSWORD" ssh root@$PROXMOX_NODE_IP << EOF
+  read -p "Enter Proxmox User Username: " PROXMOX_USER
+  echo "Enter Proxmox User Password:"
+
+  ssh $PROXMOX_USER@$PROXMOX_NODE_IP << EOF
 cd /var/lib/vz/template/iso/ || exit 1
 nohup wget -O virtio-win.iso https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso &
 nohup wget -O windows10.iso https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66750/19045.2006.220908-0225.22h2_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso &
@@ -64,8 +94,28 @@ EOF
   fi
 }
 
+download_iso_files_proxmox_menu() {
+  echo "ISO Download Menu:"
+  echo "1) Download all ISO files"
+  echo "2) Download Virtio ISO"
+  echo "3) Download Windows 10 ISO"
+  echo "4) Download Windows Server 2019 ISO"
+  echo "5) Download Ubuntu 22.04 ISO"
+  echo "6) Back to main menu"
+  read -p "Enter choice [1-6]: " iso_choice
+  case $iso_choice in
+    1) download_all_iso_files_proxmox ;;
+    2) download_iso "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso" "virtio-win.iso" ;;
+    3) download_iso "https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66750/19045.2006.220908-0225.22h2_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso" "windows10.iso" ;;
+    4) download_iso "https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66749/17763.3650.221105-1748.rs5_release_svc_refresh_SERVER_EVAL_x64FRE_en-us.iso" "windows_server_2019.iso" ;;
+    5) download_iso "https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-live-server-amd64.iso" "ubuntu-22.iso" ;;
+    6) show_menu ;;
+    *) echo "Invalid choice!"; download_iso_files_proxmox_menu ;;
+  esac
+}
+
 replace_placeholders() {
-  source_env
+  source .env
 
   log "Replacing placeholders in configuration files..."
   find . -type f ! -name "requirements.sh" -exec sed -i \
@@ -87,7 +137,7 @@ install_requirements() {
   echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
 
   sudo apt update -qq
-  sudo apt install -qq -y python3 python3-pip unzip mkisofs sshpass terraform packer mono-complete
+  sudo apt install -qq -y python3 python3-pip unzip mkisofs terraform packer mono-complete
 
   pip3 install ansible pywinrm jmespath
   ansible-galaxy collection install community.windows microsoft.ad
@@ -158,7 +208,7 @@ show_menu() {
   read -p "Enter choice [1-12]: " choice
   case $choice in
     1) configure_proxmox_users ;;
-    2) source_env && download_all_iso_files_proxmox ;;
+    2) download_iso_files_proxmox_menu ;;
     3) source_env && replace_placeholders ;;
     4) install_requirements ;;
     5) chmod +x requirements.sh packer/task_templating.sh terraform/task_terraforming.sh ;;
@@ -166,4 +216,11 @@ show_menu() {
     7) cd ~/ad-training-lab/packer && create_templates ;;
     8) cd ~/ad-training-lab/terraform && run_terraform ;;
     9) cd ~/ad-training-lab/ansible && git clone https://github.com/hanshoyos/Snare-Products.git ;;
-    
+    10) cd ~/ad-training-lab/ansible && run_ansible ;;
+    11) tail -f $LOGFILE ;;
+    12) exit 0 ;;
+    *) echo "Invalid choice!"; show_menu ;;
+  esac
+}
+
+show_menu
