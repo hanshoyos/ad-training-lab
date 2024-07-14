@@ -1,0 +1,51 @@
+---
+- name: Install Microsoft SQL Server and Configure Permissions
+  hosts: MSSQL
+  gather_facts: no
+  tasks:
+    - name: Ensure C:\Temp directory exists
+      win_file:
+        path: C:\Temp
+        state: directory
+
+    - name: Download MSSQL installer
+      win_get_url:
+        url: https://go.microsoft.com/fwlink/?linkid=866662  # Replace with the correct URL for the desired SQL Server version
+        dest: C:\Temp\SQLServer2019.exe
+
+    - name: Install MSSQL Server
+      win_shell: |
+        Start-Process -FilePath C:\Temp\SQLServer2019.exe -ArgumentList '/qs', '/ACTION=Install', '/FEATURES=SQLENGINE', '/INSTANCENAME=MSSQLSERVER', '/SECURITYMODE=SQL', '/SAPWD=YourStrong!Passw0rd', '/IACCEPTSQLSERVERLICENSETERMS' -NoNewWindow -Wait
+      args:
+        executable: powershell.exe
+
+    - name: Ensure MSSQL service is running
+      win_service:
+        name: MSSQLSERVER
+        start_mode: auto
+        state: started
+
+    - name: Create SQL script to grant sysadmin permissions
+      win_copy:
+        content: |
+          USE [master];
+          GO
+          ALTER SERVER ROLE [sysadmin] ADD MEMBER [NT AUTHORITY\SYSTEM];
+          GO
+        dest: C:\Temp\grant_sysadmin.sql
+
+    - name: Execute SQL script to grant sysadmin permissions
+      win_shell: |
+        sqlcmd -S .\MSSQLSERVER -i C:\Temp\grant_sysadmin.sql
+      args:
+        executable: cmd.exe
+
+    - name: Clean up installation files and scripts
+      win_file:
+        path: C:\Temp\SQLServer2019.exe
+        state: absent
+
+    - name: Clean up SQL script
+      win_file:
+        path: C:\Temp\grant_sysadmin.sql
+        state: absent
