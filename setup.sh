@@ -6,23 +6,6 @@ log() {
   echo "$1" | tee -a $LOGFILE
 }
 
-create_env_file() {
-  log "Creating .env file..."
-  read -p "Enter Proxmox API ID (e.g., userprovisioner@pve!provisioner-token): " PROXMOX_API_ID
-  read -p "Enter Proxmox API Token: " PROXMOX_API_TOKEN
-  read -p "Enter Proxmox Node IP (e.g., 192.168.1.X): " PROXMOX_NODE_IP
-  read -p "Enter Proxmox Node Name (e.g., pve): " PROXMOX_NODE_NAME
-
-  cat <<EOF > .env
-PROXMOX_API_ID=$PROXMOX_API_ID
-PROXMOX_API_TOKEN=$PROXMOX_API_TOKEN
-PROXMOX_NODE_IP=$PROXMOX_NODE_IP
-PROXMOX_NODE_NAME=$PROXMOX_NODE_NAME
-EOF
-
-  log ".env file created successfully."
-}
-
 source_env() {
   if [ -f .env ]; then
     log "Sourcing .env file..."
@@ -35,15 +18,28 @@ source_env() {
 
 configure_proxmox_users() {
   log "Configuring Proxmox users and roles..."
-  ssh root@$PROXMOX_NODE_IP << EOF
+  read -p "Enter Proxmox User IP: " PROXMOX_USER_IP
+  read -s -p "Enter Proxmox User Password: " PROXMOX_USER_PASSWORD
+  echo
+
+  sshpass -p "$PROXMOX_USER_PASSWORD" ssh root@$PROXMOX_USER_IP << EOF > /tmp/proxmox_output.log
 pveum role add provisioner -privs "Datastore.AllocateSpace Datastore.Audit Pool.Allocate Pool.Audit SDN.Use Sys.Audit Sys.Console Sys.Modify VM.Allocate VM.Audit VM.Clone VM.Config.CDROM VM.Config.Cloudinit VM.Config.CPU VM.Config.Disk VM.Config.HWType VM.Config.Memory VM.Config.Network VM.Console VM.Config.Options VM.Migrate VM.Monitor VM.PowerMgmt"
 pveum user add userprovisioner@pve
 pveum aclmod / -user userprovisioner@pve -role provisioner
 pveum user token add userprovisioner@pve provisioner-token --privsep=0
-pveum aclmod /storage/local --user userprovisioner@pve --role PVEDatastoreAdmin --token $PROXMOX_API_ID
+pveum aclmod /storage/local --user userprovisioner@pve --role PVEDatastoreAdmin --token userprovisioner@pve!provisioner-token
+pveum user token list userprovisioner@pve provisioner-token --output-format=json
 EOF
+
   if [ $? -eq 0 ]; then
     log "Proxmox user configuration successful."
+    PROXMOX_API_TOKEN=$(grep -oP '(?<="value": ")[^"]*' /tmp/proxmox_output.log)
+    echo "PROXMOX_API_ID=userprovisioner@pve!provisioner-token" > .env
+    echo "PROXMOX_API_TOKEN=$PROXMOX_API_TOKEN" >> .env
+    echo "PROXMOX_NODE_IP=$PROXMOX_USER_IP" >> .env
+    echo "PROXMOX_NODE_NAME=pve" >> .env
+    log ".env file created successfully."
+    cat .env | tee -a $LOGFILE
   else
     log "Error: Proxmox user configuration failed. Please check your Proxmox settings and try again."
     exit 1
@@ -52,7 +48,8 @@ EOF
 
 download_all_iso_files_proxmox() {
   log "Downloading all ISO files on Proxmox server. This may take a while..."
-  ssh root@$PROXMOX_NODE_IP << EOF
+  source_env
+  sshpass -p "$PROXMOX_USER_PASSWORD" ssh root@$PROXMOX_NODE_IP << EOF
 cd /var/lib/vz/template/iso/ || exit 1
 nohup wget -O virtio-win.iso https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso &
 nohup wget -O windows10.iso https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66750/19045.2006.220908-0225.22h2_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso &
@@ -68,7 +65,7 @@ EOF
 }
 
 replace_placeholders() {
-  source .env
+  source_env
 
   log "Replacing placeholders in configuration files..."
   find . -type f ! -name "requirements.sh" -exec sed -i \
@@ -146,41 +143,27 @@ run_ansible() {
 
 show_menu() {
   echo "Main Menu:"
-  echo "1) Create .env file"
-  echo "2) Configure Proxmox users and roles"
-  echo "3) Download ISO files on Proxmox server"
-  echo "4) Replace placeholders in configuration files"
-  echo "5) Install required packages"
-  echo "6) Make scripts executable"
-  echo "7) Run requirements.sh script"
-  echo "8) Create templates using Packer"
-  echo "9) Run Terraform scripts"
-  echo "10) Clone Snare-Products repository"
-  echo "11) Run Ansible playbook"
-  echo "12) View log file"
-  echo "13) Exit"
-  read -p "Enter choice [1-13]: " choice
+  echo "1) Configure Proxmox users and roles"
+  echo "2) Download ISO files on Proxmox server"
+  echo "3) Replace placeholders in configuration files"
+  echo "4) Install required packages"
+  echo "5) Make scripts executable"
+  echo "6) Run requirements.sh script"
+  echo "7) Create templates using Packer"
+  echo "8) Run Terraform scripts"
+  echo "9) Clone Snare-Products repository"
+  echo "10) Run Ansible playbook"
+  echo "11) View log file"
+  echo "12) Exit"
+  read -p "Enter choice [1-12]: " choice
   case $choice in
-    1) create_env_file ;;
-    2) source_env && configure_proxmox_users ;;
-    3) source_env && download_all_iso_files_proxmox ;;
-    4) source_env && replace_placeholders ;;
-    5) install_requirements ;;
-    6) chmod +x requirements.sh packer/task_templating.sh terraform/task_terraforming.sh ;;
-    7) sudo ./requirements.sh | tee -a $LOGFILE ;;
-    8) cd ~/ad-training-lab/packer && create_templates ;;
-    9) cd ~/ad-training-lab/terraform && run_terraform ;;
-    10) cd ~/ad-training-lab/ansible && git clone https://github.com/hanshoyos/Snare-Products.git ;;
-    11) cd ~/ad-training-lab/ansible && run_ansible ;;
-    12) tail -f $LOGFILE ;;
-    13) exit 0 ;;
-    *) echo "Invalid choice!"; show_menu ;;
-  esac
-}
-
-# Ensure the log file is created and accessible
-touch $LOGFILE
-chmod 644 $LOGFILE
-
-# Show the main menu
-show_menu
+    1) configure_proxmox_users ;;
+    2) source_env && download_all_iso_files_proxmox ;;
+    3) source_env && replace_placeholders ;;
+    4) install_requirements ;;
+    5) chmod +x requirements.sh packer/task_templating.sh terraform/task_terraforming.sh ;;
+    6) sudo ./requirements.sh | tee -a $LOGFILE ;;
+    7) cd ~/ad-training-lab/packer && create_templates ;;
+    8) cd ~/ad-training-lab/terraform && run_terraform ;;
+    9) cd ~/ad-training-lab/ansible && git clone https://github.com/hanshoyos/Snare-Products.git ;;
+    
