@@ -54,6 +54,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
     ADCS       = local.vm_id_templates.win2019
     FS         = local.vm_id_templates.win2019
     WEB        = local.vm_id_templates.win2019
+    MSSQL      = local.vm_id_templates.win2019
     WS1        = local.vm_id_templates.workstation
     WS2        = local.vm_id_templates.workstation
   }
@@ -112,6 +113,7 @@ output "ansible_inventory" {
       "FS"  = proxmox_virtual_environment_vm.vm["FS"].ipv4_addresses[0][0]
       "ADCS" = proxmox_virtual_environment_vm.vm["ADCS"].ipv4_addresses[0][0]
       "WEB" = proxmox_virtual_environment_vm.vm["WEB"].ipv4_addresses[0][0]
+      "MSSQL" = proxmox_virtual_environment_vm.vm["MSSQL"].ipv4_addresses[0][0]
       "WS1" = proxmox_virtual_environment_vm.vm["WS1"].ipv4_addresses[0][0]
       "WS2" = proxmox_virtual_environment_vm.vm["WS2"].ipv4_addresses[0][0]
     }
