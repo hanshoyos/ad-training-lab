@@ -1,8 +1,42 @@
 ---
-- name: Install Microsoft SQL Server and Configure Permissions
+- name: Configure Server and Install Microsoft SQL Server
   hosts: MSSQL
   gather_facts: no
   tasks:
+    - name: Rename server
+      win_hostname:
+        name: "{{ inventory_hostname }}"
+      register: rename
+
+    - name: Reboot after rename
+      win_reboot:
+      when: rename.reboot_required
+
+    - name: Set DNS to Domain Controller
+      win_dns_client:
+        adapter_names: '*'
+        dns_servers:
+        - "{{ hostvars['DC']['ansible_host'] }}"
+
+    - name: Join Domain
+      microsoft.ad.membership:
+        dns_domain_name: "{{ domain_name }}"
+        domain_admin_user: Administrator@{{ domain_name }}
+        domain_admin_password: "{{ domain_admin_password }}"
+        state: domain
+        reboot: true
+
+    - name: Set autologon for specific user
+      community.windows.win_auto_logon:
+        username: '{{ domain_admin_login }}'
+        password: '{{ domain_admin_password }}'
+
+    - name: Allow RDP to specific users
+      ansible.windows.win_user_right:
+        name: SeRemoteInteractiveLogonRight
+        users:
+        - Administrators
+
     - name: Ensure C:\Temp directory exists
       win_file:
         path: C:\Temp
