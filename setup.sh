@@ -6,15 +6,25 @@ log() {
   echo "$1" | tee -a $LOGFILE
 }
 
-# Update and upgrade system
-log "Updating and upgrading system..."
-sudo apt update && sudo apt upgrade -y
-if [ $? -eq 0 ]; then
-  log "System updated successfully."
-else
-  log "Error: Failed to update system."
-  exit 1
-fi
+os_package_updates_and_installs_menu() {
+  echo "OS Package Updates and Installs Menu:"
+  echo "1) Update and upgrade system"
+  echo "2) Install curl"
+  echo "3) Install git"
+  echo "4) Install nano"
+  echo "5) Install all (curl, git, nano)"
+  echo "6) Back to main menu"
+  read -p "Enter choice [1-6]: " os_choice
+  case $os_choice in
+    1) sudo apt update && sudo apt upgrade -y ;;
+    2) sudo apt install -y curl ;;
+    3) sudo apt install -y git ;;
+    4) sudo apt install -y nano ;;
+    5) sudo apt update && sudo apt upgrade -y && sudo apt install -y curl git nano ;;
+    6) show_menu ;;
+    *) echo "Invalid choice!"; os_package_updates_and_installs_menu ;;
+  esac
+}
 
 source_env() {
   if [ -f .env ]; then
@@ -150,38 +160,32 @@ install_requirements() {
 }
 
 create_templates() {
-  log "Creating templates using Packer. This may take a while..."
-  for directory in $(ls -d */); do
-    cd $directory
-    packer init . | tee -a $LOGFILE
-    echo "[+] building template in: $(pwd)" | tee -a $LOGFILE
-    packer build . | tee -a $LOGFILE
-    cd ..
-  done
+  log "Running task_templating.sh script in packer/..."
+  cd ~/ad-training-lab/packer || { echo "Directory packer not found"; exit 1; }
+  ./task_templating.sh | tee -a $LOGFILE
   if [ $? -eq 0 ]; then
-    log "Templates created successfully."
+    log "task_templating.sh script ran successfully."
   else
-    log "Error: Failed to create templates using Packer."
+    log "Error: Failed to run task_templating.sh script."
     exit 1
   fi
 }
 
 run_terraform() {
-  log "Running Terraform scripts. This may take a while..."
-  terraform init | tee -a $LOGFILE
-  terraform apply -auto-approve | tee -a $LOGFILE
-  terraform output -raw ansible_inventory > ../ansible/inventory/hosts.yml
+  log "Running task_terraforming.sh script in terraform/..."
+  cd ~/ad-training-lab/terraform || { echo "Directory terraform not found"; exit 1; }
+  ./task_terraforming.sh | tee -a $LOGFILE
   if [ $? -eq 0 ]; then
-    log "Terraform scripts applied successfully."
-    log "[+] Next step: Run -> ansible-playbook main.yml <- inside the ansible folder!"
+    log "task_terraforming.sh script ran successfully."
   else
-    log "Error: Failed to apply Terraform scripts."
+    log "Error: Failed to run task_terraforming.sh script."
     exit 1
   fi
 }
 
 run_ansible() {
   log "Running the Ansible playbook inside ansible/..."
+  cd ~/ad-training-lab/ansible || { echo "Directory ansible not found"; exit 1; }
   ansible-playbook main.yml -vvv | tee -a $LOGFILE
   if [ $? -eq 0 ]; then
     log "Ansible playbook ran successfully."
@@ -196,7 +200,7 @@ show_menu() {
   echo "1) Configure Proxmox users and roles"
   echo "2) Download ISO files on Proxmox server"
   echo "3) Replace placeholders in configuration files"
-  echo "4) Install required packages"
+  echo "4) OS package updates and installs"
   echo "5) Make scripts executable"
   echo "6) Run requirements.sh script"
   echo "7) Create templates using Packer"
@@ -210,13 +214,13 @@ show_menu() {
     1) configure_proxmox_users ;;
     2) download_iso_files_proxmox_menu ;;
     3) source_env && replace_placeholders ;;
-    4) install_requirements ;;
+    4) os_package_updates_and_installs_menu ;;
     5) chmod +x requirements.sh packer/task_templating.sh terraform/task_terraforming.sh ;;
     6) sudo ./requirements.sh | tee -a $LOGFILE ;;
-    7) cd ~/ad-training-lab/packer && create_templates ;;
-    8) cd ~/ad-training-lab/terraform && run_terraform ;;
+    7) create_templates ;;
+    8) run_terraform ;;
     9) cd ~/ad-training-lab/ansible && git clone https://github.com/hanshoyos/Snare-Products.git ;;
-    10) cd ~/ad-training-lab/ansible && run_ansible ;;
+    10) run_ansible ;;
     11) tail -f $LOGFILE ;;
     12) exit 0 ;;
     *) echo "Invalid choice!"; show_menu ;;
