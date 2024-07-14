@@ -17,9 +17,9 @@ source "proxmox-iso" "traininglab-ws" {
   username     = var.proxmox_api_id
   token        = var.proxmox_api_token
   
-  #iso_file     = "local:iso/windows10.iso" #-- uncomment if you want to use local iso file and comment the next four lines
-  iso_checksum             = "sha256:ef7312733a9f5d7d51cfa04ac497671995674ca5e1058d5164d6028f0938d668"
-  iso_url                  = "https://go.microsoft.com/fwlink/p/?LinkID=2195404&clcid=0x409&culture=en-us&country=US"
+  iso_file     = "local:iso/windows_10.iso" #-- uncomment if you want to use local iso file and comment the next four lines
+  #iso_checksum             = "sha256:ef7312733a9f5d7d51cfa04ac497671995674ca5e1058d5164d6028f0938d668"
+  #iso_url                  = "https://go.microsoft.com/fwlink/p/?LinkID=2195404&clcid=0x409&culture=en-us&country=US"
   iso_storage_pool         = "local"
   iso_download_pve = true
 
