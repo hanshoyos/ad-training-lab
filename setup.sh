@@ -3,27 +3,26 @@
 LOGFILE=setup.log
 
 log() {
-  echo "$1" | tee -a $LOGFILE
+  echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a $LOGFILE
 }
 
-os_package_updates_and_installs_menu() {
-  echo "OS Package Updates and Installs Menu:"
-  echo "1) Update and upgrade system"
-  echo "2) Install curl"
-  echo "3) Install git"
-  echo "4) Install nano"
-  echo "5) Install all (curl, git, nano)"
-  echo "6) Back to main menu"
-  read -p "Enter choice [1-6]: " os_choice
-  case $os_choice in
-    1) sudo apt update && sudo apt upgrade -y ;;
-    2) sudo apt install -y curl ;;
-    3) sudo apt install -y git ;;
-    4) sudo apt install -y nano ;;
-    5) sudo apt update && sudo apt upgrade -y && sudo apt install -y curl git nano ;;
-    6) show_menu ;;
-    *) echo "Invalid choice!"; os_package_updates_and_installs_menu ;;
-  esac
+error_exit() {
+  log "ERROR: $1"
+  exit 1
+}
+
+update_system_and_install_dependencies() {
+  log "Updating and upgrading the system, and installing required packages..."
+  sudo apt update && sudo apt upgrade -y || error_exit "System update and upgrade failed."
+  sudo apt install -y git gpg nano tmux curl gnupg software-properties-common mkisofs python3-venv python3 python3-pip unzip mono-complete || error_exit "Failed to install required packages."
+}
+
+create_venv() {
+  log "Creating and activating Python virtual environment..."
+  sudo apt install -y python3-venv || error_exit "Failed to install python3-venv."
+  python3 -m venv venv || error_exit "Failed to create Python virtual environment."
+  echo "source $(pwd)/venv/bin/activate" >> ~/.bashrc
+  source $(pwd)/venv/bin/activate || error_exit "Failed to activate Python virtual environment."
 }
 
 source_env() {
@@ -31,8 +30,7 @@ source_env() {
     log "Sourcing .env file..."
     export $(grep -v '^#' .env | xargs)
   else
-    log "Error: .env file not found! Exiting..."
-    exit 1
+    error_exit ".env file not found! Exiting..."
   fi
 }
 
@@ -40,9 +38,10 @@ configure_proxmox_users() {
   log "Configuring Proxmox users and roles..."
   read -p "Enter Proxmox User IP: " PROXMOX_USER_IP
   read -p "Enter Proxmox User Username: " PROXMOX_USER
-  echo "Enter Proxmox User Password:"
-  
-  ssh $PROXMOX_USER@$PROXMOX_USER_IP << EOF > /tmp/proxmox_output.log 2>&1
+  read -sp "Enter Proxmox User Password: " PROXMOX_PASS
+  echo
+
+  sshpass -p $PROXMOX_PASS ssh $PROXMOX_USER@$PROXMOX_USER_IP << EOF > /tmp/proxmox_output.log 2>&1
 pveum role add provisioner -privs "Datastore.AllocateSpace Datastore.Audit Pool.Allocate Pool.Audit SDN.Use Sys.Audit Sys.Console Sys.Modify VM.Allocate VM.Audit VM.Clone VM.Config.CDROM VM.Config.Cloudinit VM.Config.CPU VM.Config.Disk VM.Config.HWType VM.Config.Memory VM.Config.Network VM.Console VM.Config.Options VM.Migrate VM.Monitor VM.PowerMgmt"
 pveum user add userprovisioner@pve
 pveum aclmod / -user userprovisioner@pve -role provisioner
@@ -66,9 +65,40 @@ EOF
     log ".env file created successfully. Please paste the copied API token in the PROXMOX_API_TOKEN field."
     nano .env
   else
-    log "API token not copied. Exiting..."
-    exit 1
+    error_exit "API token not copied. Exiting..."
   fi
+}
+
+replace_placeholders() {
+  source_env
+
+  log "Replacing placeholders in configuration files..."
+  find . -type f ! -name "requirements.sh" -exec sed -i \
+    -e "s/<proxmox_api_id>/$PROXMOX_API_ID/g" \
+    -e "s/<proxmox_api_token>/$PROXMOX_API_TOKEN/g" \
+    -e "s/<proxmox_node_ip>/$PROXMOX_NODE_IP/g" \
+    -e "s/<proxmox_node_name>/$PROXMOX_NODE_NAME/g" {} +
+
+  find ./packer -type f -name "example.auto.pkrvars.hcl.txt" -exec bash -c \
+    'mv "$0" "${0/example.auto.pkrvars.hcl.txt/value.auto.pkrvars.hcl}"' {} \;
+
+  find ./terraform -type f -name "example-terraform.tfvars.txt" -exec bash -c \
+    'mv "$0" "${0/example-terraform.tfvars.txt/terraform.tfvars}"' {} \;
+}
+
+install_ansible() {
+  log "Installing Ansible..."
+  UBUNTU_CODENAME=$(lsb_release -cs)
+  wget -O- "https://keyserver.ubuntu.com/pks/lookup?fingerprint=on&op=get&search=0x6125E2A8C77F2818FB7BD15B93C4A3FD7BB9C367" | sudo gpg --dearmor --yes -o /usr/share/keyrings/ansible-archive-keyring.gpg
+  echo "deb [signed-by=/usr/share/keyrings/ansible-archive-keyring.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu $UBUNTU_CODENAME main" | sudo tee /etc/apt/sources.list.d/ansible.list
+  sudo apt update && sudo apt install -y ansible || error_exit "Failed to install Ansible."
+}
+
+install_packer_terraform() {
+  log "Installing Packer and Terraform..."
+  wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor --yes | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
+  echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+  sudo apt update && sudo apt install -y packer terraform || error_exit "Failed to install Packer and Terraform."
 }
 
 download_iso() {
@@ -78,8 +108,7 @@ download_iso() {
   if [ $? -eq 0 ]; then
     log "$filename download initiated."
   else
-    log "Error: Failed to initiate $filename download."
-    exit 1
+    error_exit "Failed to initiate $filename download."
   fi
 }
 
@@ -87,9 +116,10 @@ download_all_iso_files_proxmox() {
   log "Downloading all ISO files on Proxmox server. This may take a while..."
   source_env
   read -p "Enter Proxmox User Username: " PROXMOX_USER
-  echo "Enter Proxmox User Password:"
+  read -sp "Enter Proxmox User Password: " PROXMOX_PASS
+  echo
 
-  ssh $PROXMOX_USER@$PROXMOX_NODE_IP << EOF
+  sshpass -p $PROXMOX_PASS ssh $PROXMOX_USER@$PROXMOX_NODE_IP << EOF
 cd /var/lib/vz/template/iso/ || exit 1
 nohup wget -O virtio-win.iso https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso &
 nohup wget -O windows10.iso https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66750/19045.2006.220908-0225.22h2_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso &
@@ -99,8 +129,7 @@ EOF
   if [ $? -eq 0 ]; then
     log "ISO files download initiated."
   else
-    log "Error: Failed to initiate ISO files download."
-    exit 1
+    error_exit "Failed to initiate ISO files download."
   fi
 }
 
@@ -119,112 +148,35 @@ download_iso_files_proxmox_menu() {
     3) download_iso "https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66750/19045.2006.220908-0225.22h2_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso" "windows10.iso" ;;
     4) download_iso "https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66749/17763.3650.221105-1748.rs5_release_svc_refresh_SERVER_EVAL_x64FRE_en-us.iso" "windows_server_2019.iso" ;;
     5) download_iso "https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-live-server-amd64.iso" "ubuntu-22.iso" ;;
-    6) show_menu ;;
-    *) echo "Invalid choice!"; download_iso_files_proxmox_menu ;;
+    6) log "Returning to main menu..." ;;
+    *) log "Invalid option. Please select a valid choice." ;;
   esac
 }
 
-replace_placeholders() {
-  source .env
-
-  log "Replacing placeholders in configuration files..."
-  find . -type f ! -name "requirements.sh" -exec sed -i \
-    -e "s/<proxmox_api_id>/$PROXMOX_API_ID/g" \
-    -e "s/<proxmox_api_token>/$PROXMOX_API_TOKEN/g" \
-    -e "s/<proxmox_node_ip>/$PROXMOX_NODE_IP/g" \
-    -e "s/<proxmox_node_name>/$PROXMOX_NODE_NAME/g" {} +
-
-  find ./packer -type f -name "example.auto.pkrvars.hcl.txt" -exec bash -c \
-    'mv "$0" "${0/example.auto.pkrvars.hcl.txt/value.auto.pkrvars.hcl}"' {} \;
-
-  find ./terraform -type f -name "example-terraform.tfvars.txt" -exec bash -c \
-    'mv "$0" "${0/example-terraform.tfvars.txt/terraform.tfvars}"' {} \;
-}
-
-install_requirements() {
-  log "Installing required packages. This may take a while..."
-  wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-  echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
-
-  sudo apt update -qq
-  sudo apt install -qq -y python3 python3-pip unzip mkisofs terraform packer mono-complete
-
-  pip3 install ansible pywinrm jmespath
-  ansible-galaxy collection install community.windows microsoft.ad
-  if [ $? -eq 0 ]; then
-    log "Required packages installed successfully."
-  else
-    log "Error: Failed to install required packages."
-    exit 1
-  fi
-}
-
-create_templates() {
-  log "Running task_templating.sh script in packer/..."
-  cd ~/ad-training-lab/packer || { echo "Directory packer not found"; exit 1; }
-  ./task_templating.sh | tee -a $LOGFILE
-  if [ $? -eq 0 ]; then
-    log "task_templating.sh script ran successfully."
-  else
-    log "Error: Failed to run task_templating.sh script."
-    exit 1
-  fi
-}
-
-run_terraform() {
-  log "Running task_terraforming.sh script in terraform/..."
-  cd ~/ad-training-lab/terraform || { echo "Directory terraform not found"; exit 1; }
-  ./task_terraforming.sh | tee -a $LOGFILE
-  if [ $? -eq 0 ]; then
-    log "task_terraforming.sh script ran successfully."
-  else
-    log "Error: Failed to run task_terraforming.sh script."
-    exit 1
-  fi
-}
-
-run_ansible() {
-  log "Running the Ansible playbook inside ansible/..."
-  cd ~/ad-training-lab/ansible || { echo "Directory ansible not found"; exit 1; }
-  ansible-playbook main.yml -vvv | tee -a $LOGFILE
-  if [ $? -eq 0 ]; then
-    log "Ansible playbook ran successfully."
-  else
-    log "Error: Failed to run Ansible playbook."
-    exit 1
-  fi
-}
-
-show_menu() {
+main_menu() {
   echo "Main Menu:"
-  echo "1) Configure Proxmox users and roles"
-  echo "2) Download ISO files on Proxmox server"
-  echo "3) Replace placeholders in configuration files"
-  echo "4) OS package updates and installs"
-  echo "5) Make scripts executable"
-  echo "6) Run requirements.sh script"
-  echo "7) Create templates using Packer"
-  echo "8) Run Terraform scripts"
-  echo "9) Clone Snare-Products repository"
-  echo "10) Run Ansible playbook"
-  echo "11) View log file"
-  echo "12) Exit"
-  read -p "Enter choice [1-12]: " choice
-  case $choice in
-    1) configure_proxmox_users ;;
-    2) download_iso_files_proxmox_menu ;;
-    3) source_env && replace_placeholders ;;
-    4) os_package_updates_and_installs_menu ;;
-    5) chmod +x requirements.sh packer/task_templating.sh terraform/task_terraforming.sh ;;
-    6) sudo ./requirements.sh | tee -a $LOGFILE ;;
-    7) create_templates ;;
-    8) run_terraform ;;
-    9) cd ~/ad-training-lab/ansible && git clone https://github.com/hanshoyos/Snare-Products.git ;;
-    10) run_ansible ;;
-    11) tail -f $LOGFILE ;;
-    12) exit 0 ;;
-    *) echo "Invalid choice!"; show_menu ;;
+  echo "1) Update System and Install Dependencies"
+  echo "2) Create Python Virtual Environment"
+  echo "3) Configure Proxmox Users"
+  echo "4) Replace Placeholders in Configuration Files"
+  echo "5) Install Ansible"
+  echo "6) Install Packer and Terraform"
+  echo "7) Download ISO Files to Proxmox"
+  echo "8) Exit"
+  read -p "Enter choice [1-8]: " main_choice
+  case $main_choice in
+    1) update_system_and_install_dependencies ;;
+    2) create_venv ;;
+    3) configure_proxmox_users ;;
+    4) replace_placeholders ;;
+    5) install_ansible ;;
+    6) install_packer_terraform ;;
+    7) download_iso_files_proxmox_menu ;;
+    8) log "Exiting script. Goodbye!" ; exit 0 ;;
+    *) log "Invalid option. Please select a valid choice." ;;
   esac
 }
 
-show_menu
+while true; do
+  main_menu
+done
