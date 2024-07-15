@@ -51,17 +51,7 @@
         users:
         - Administrators
 
-    - name: Disable Password Complexity
-      win_shell: |
-        Import-Module ActiveDirectory
-        $domain = (Get-ADDomain).DistinguishedName
-        $policy = Get-ADDefaultDomainPasswordPolicy -Identity $domain
-        $policy.ComplexityEnabled = $false
-        Set-ADDefaultDomainPasswordPolicy -Identity $domain -ComplexityEnabled $false
-      args:
-        executable: powershell.exe
-
-    - name: Add snaretest account (ws2 account)
+    - name: Add snaretest local account (ws account)
       microsoft.ad.user:
         name: '{{ first_user }}'
         firstname: snare
@@ -74,15 +64,31 @@
           set:
           - Domain Users
           - Remote Desktop Users
-          - Administrators
-          - Domain Admin
 
-    - name: Re-enable Password Complexity
-      win_shell: |
-        Import-Module ActiveDirectory
-        $domain = (Get-ADDomain).DistinguishedName
-        $policy = Get-ADDefaultDomainPasswordPolicy -Identity $domain
-        $policy.ComplexityEnabled = $true
-        Set-ADDefaultDomainPasswordPolicy -Identity $domain -ComplexityEnabled $true
-      args:
-        executable: powershell.exe
+    - name: Add webadmin local account (web admin account)
+      microsoft.ad.user:
+        name: '{{ web_admin }}'
+        firstname: WebServer
+        surname: Administrator
+        password: '{{ web_admin_password }}'
+        state: present
+        domain_username: Administrator
+        domain_password: '{{ domain_admin_password }}'
+        groups:
+          set:
+          - Domain Users
+          - Remote Desktop Users
+
+    - name: Add fsadmin account local (fs admin account)
+      microsoft.ad.user:
+        name: '{{ server_admin }}'
+        firstname: FileSystem
+        surname: Administrator
+        password: '{{ server_admin_password }}'
+        state: present
+        domain_username: Administrator
+        domain_password: '{{ domain_admin_password }}'
+        groups:
+          set:
+          - Domain Users
+          - Remote Desktop Users
