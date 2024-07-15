@@ -4,93 +4,26 @@
   gather_facts: no
   vars:
     gpo_name: MapSnareProductsDrive
-    gpo_description: GPO to map Snare-Products shared drive
-    share_path: "\\{{ domain_name }}\Snare-Products"
+    gpo_description: "GPO to map Snare-Products shared drive"
+    share_path: "\\\\{{ domain_name }}\\Snare-Products"
     domain_dn: "DC={{ domain_short|lower }},DC=lab,DC=local"
+    ps_script_src: "~/ad-training-lab/ansible/playbooks/Snare-Products/create_gpo_map_drive.ps1"
 
   tasks:
-    - name: Ensure GPMC is installed
-      win_feature:
-        name: GPMC
-        state: present
+    - name: Ensure C:\Temp directory exists
+      win_file:
+        path: C:\Temp
+        state: directory
 
-    - name: Create GPO
-      win_shell: |
-        Import-Module GroupPolicy
-        New-GPO -Name "{{ gpo_name }}" -Comment "{{ gpo_description }}"
-      args:
-        executable: powershell.exe
+    - name: Copy PowerShell script to Windows machine
+      win_copy:
+        src: "{{ ps_script_src }}"
+        dest: C:\Temp\create_gpo_map_drive.ps1
 
-    - name: Configure GPO to map Snare-Products Drive
-      win_shell: |
-        Import-Module GroupPolicy
-        $gpoName = "{{ gpo_name }}"
-        $sharePath = "{{ share_path }}"
+    - name: Execute PowerShell script to create and configure GPO
+      win_shell: powershell.exe -ExecutionPolicy Bypass -File C:\Temp\create_gpo_map_drive.ps1 -GpoName "{{ gpo_name }}" -GpoDescription "{{ gpo_description }}" -SharePath "{{ share_path }}" -DomainDn "{{ domain_dn }}"
 
-        # Create the XML for the drive map
-        $driveMapXML = @"
-<DriveMaps clsid="{"8AD5C1C7-F46C-4DFF-B9E5-A1C349BCEAAF}" displayName="Snare-Products Drive" image="7" preference="true">
-    <Properties action="U" uid="2E143B8F-6B0D-4E8B-9239-BB1DC4AD8C34" driveLetter="P" path="$sharePath" hide="false" />
-</DriveMaps>
-"@
-
-        # Create a temporary path to store the XML
-        $gpoBackupPath = "C:\Temp\GPOBackups"
-        if (-not (Test-Path $gpoBackupPath)) {
-          New-Item -ItemType Directory -Path $gpoBackupPath
-        }
-
-        # Backup the GPO
-        Backup-GPO -Name $gpoName -Path $gpoBackupPath
-
-        # Get the path to the GPO XML file
-        $gpo = Get-GPO -Name $gpoName
-        $gpoXMLPath = Join-Path -Path $gpoBackupPath -ChildPath $gpo.GPOID
-        $gpoXMLPath = Join-Path -Path $gpoXMLPath -ChildPath "Machine\Preferences\Drives\Drives.xml"
-
-        # Write the drive map XML to the XML file
-        $driveMapXML | Out-File -FilePath $gpoXMLPath -Encoding ASCII
-
-        # Restore the GPO from the modified backup
-        Restore-GPO -Name $gpoName -Path $gpoBackupPath -Replace
-
-        # Clean up temporary backup path
-        Remove-Item -Recurse -Force -Path $gpoBackupPath
-      args:
-        executable: powershell.exe
-
-    - name: Link GPO to the domain
-      win_shell: |
-        Import-Module GroupPolicy
-        New-GPLink -Name "{{ gpo_name }}" -Target "{{ domain_dn }}"
-      args:
-        executable: powershell.exe
-
-    - name: Ensure GPO is linked to the domain
-      win_shell: |
-        Import-Module GroupPolicy
-        $gpoName = "{{ gpo_name }}"
-        $gpo = Get-GPO -Name $gpoName
-        if (-not $gpo) {
-          Write-Error "GPO not found"
-          exit 1
-        }
-        New-GPLink -Name $gpoName -Target "{{ domain_dn }}"
-      args:
-        executable: powershell.exe
-      register: gpo_link
-
-    - name: Check if GPO linking was successful
-      assert:
-        that:
-          - gpo_link.rc == 0
-        fail_msg: "Failed to link the GPO to the domain."
-        success_msg: "Successfully linked the GPO to the domain."
-
-    - name: Set permissions on Snare-Products shared folder
-      win_acl:
-        path: '\\SnareTraininglab.local\Snare-Products'
-        user: 'Everyone'
-        rights: fullcontrol
-        type: allow
-        state: present
+    - name: Clean up PowerShell script
+      win_file:
+        path: C:\Temp\create_gpo_map_drive.ps1
+        state: absent
