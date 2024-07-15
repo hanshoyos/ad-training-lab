@@ -51,7 +51,7 @@
         users:
         - Administrators
 
-    - name: Add workstation local account (ws account)
+    - name: Add workstation account (ws account)
       microsoft.ad.user:
         name: '{{ first_user }}'
         firstname: Workstation
@@ -65,7 +65,7 @@
           - Domain Users
           - Remote Desktop Users
 
-    - name: Add webadmin local account (web admin account)
+    - name: Add webadmin account (web admin account)
       microsoft.ad.user:
         name: '{{ web_admin }}'
         firstname: WebServer
@@ -79,7 +79,7 @@
           - Domain Users
           - Remote Desktop Users
 
-    - name: Add fsadmin account local (fs admin account)
+    - name: Add fsadmin account (fs admin account)
       microsoft.ad.user:
         name: '{{ server_admin }}'
         firstname: FileSystem
