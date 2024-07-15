@@ -51,6 +51,16 @@
         users:
         - Administrators
 
+    - name: Disable Password Complexity
+      win_shell: |
+        Import-Module ActiveDirectory
+        $domain = (Get-ADDomain).DistinguishedName
+        $policy = Get-ADDefaultDomainPasswordPolicy -Identity $domain
+        $policy.ComplexityEnabled = $false
+        Set-ADDefaultDomainPasswordPolicy -Identity $domain -ComplexityEnabled $false
+      args:
+        executable: powershell.exe
+
     - name: Add snaretest account (ws2 account)
       microsoft.ad.user:
         name: '{{ first_user }}'
@@ -64,36 +74,15 @@
           set:
           - Domain Users
           - Remote Desktop Users
+          - Administrators
+          - Domain Admin
 
-    - name: Add webadmin account (web admin account)
-      microsoft.ad.user:
-        name: '{{ web_admin }}'
-        firstname: WebServer
-        surname: Administrator
-        password: '{{ web_admin_password }}'
-        state: present
-        domain_username: Administrator
-        domain_password: '{{ domain_admin_password }}'
-        groups:
-          set:
-          - Domain Users
-          - Remote Desktop Users
-
-    - name: Add FSadmin account (fs admin account)
-      microsoft.ad.user:
-        name: '{{ server_admin }}'
-        firstname: FileSystem
-        surname: Administrator
-        password: '{{ server_admin_password }}'
-        state: present
-        domain_username: Administrator
-        domain_password: '{{ domain_admin_password }}'
-        groups:
-          set:
-          - Domain Users
-          - Remote Desktop Users
-
-    - name: Set autologon for specific user
-      community.windows.win_auto_logon:
-        username: '{{ domain_admin_login }}'
-        password: '{{ domain_admin_password }}'
+    - name: Re-enable Password Complexity
+      win_shell: |
+        Import-Module ActiveDirectory
+        $domain = (Get-ADDomain).DistinguishedName
+        $policy = Get-ADDefaultDomainPasswordPolicy -Identity $domain
+        $policy.ComplexityEnabled = $true
+        Set-ADDefaultDomainPasswordPolicy -Identity $domain -ComplexityEnabled $true
+      args:
+        executable: powershell.exe
