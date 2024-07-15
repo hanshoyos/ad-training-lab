@@ -173,8 +173,7 @@ download_iso_files_proxmox_menu() {
 
 clone_snare_repository() {
   log "Cloning Snare-Products repository..."
-  mkdir -p playbooks
-  cd playbooks
+  cd ~/ad-training-lab/ansible/playbooks
   git clone https://github.com/hanshoyos/Snare-Products.git || error_exit "Failed to clone Snare-Products repository."
   log "Snare-Products repository cloned successfully."
   log "Setup complete."
