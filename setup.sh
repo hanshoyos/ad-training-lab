@@ -15,6 +15,8 @@ update_system_and_install_dependencies() {
   log "Updating and upgrading the system, and installing required packages..."
   sudo apt update && sudo apt upgrade -y || error_exit "System update and upgrade failed."
   sudo apt install -y git gpg nano tmux curl gnupg software-properties-common mkisofs python3-venv python3 python3-pip unzip mono-complete || error_exit "Failed to install required packages."
+  log "System update and installation of dependencies completed."
+  log "Next, run the script again and choose 'Create Python Virtual Environment'."
 }
 
 create_venv() {
@@ -23,6 +25,10 @@ create_venv() {
   python3 -m venv venv || error_exit "Failed to create Python virtual environment."
   echo "source $(pwd)/venv/bin/activate" >> ~/.bashrc
   source $(pwd)/venv/bin/activate || error_exit "Failed to activate Python virtual environment."
+  log "Python virtual environment created and activated successfully."
+  log "Exiting script after creating virtual environment."
+  log "Next, run 'source venv/bin/activate' and then run the script again and choose 'Configure Proxmox Users'."
+  exit 0
 }
 
 source_env() {
@@ -67,6 +73,8 @@ EOF
   else
     error_exit "API token not copied. Exiting..."
   fi
+
+  log "Next, run the script again and choose 'Replace Placeholders in Configuration Files'."
 }
 
 replace_placeholders() {
@@ -84,6 +92,9 @@ replace_placeholders() {
 
   find ./terraform -type f -name "example-terraform.tfvars.txt" -exec bash -c \
     'mv "$0" "${0/example-terraform.tfvars.txt/terraform.tfvars}"' {} \;
+
+  log "Placeholders in configuration files replaced successfully."
+  log "Next, run the script again and choose 'Install Ansible'."
 }
 
 install_ansible() {
@@ -92,6 +103,8 @@ install_ansible() {
   wget -O- "https://keyserver.ubuntu.com/pks/lookup?fingerprint=on&op=get&search=0x6125E2A8C77F2818FB7BD15B93C4A3FD7BB9C367" | sudo gpg --dearmor --yes -o /usr/share/keyrings/ansible-archive-keyring.gpg
   echo "deb [signed-by=/usr/share/keyrings/ansible-archive-keyring.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu $UBUNTU_CODENAME main" | sudo tee /etc/apt/sources.list.d/ansible.list
   sudo apt update && sudo apt install -y ansible || error_exit "Failed to install Ansible."
+  log "Ansible installed successfully."
+  log "Next, run the script again and choose 'Install Packer and Terraform'."
 }
 
 install_packer_terraform() {
@@ -99,6 +112,8 @@ install_packer_terraform() {
   wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor --yes | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
   echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
   sudo apt update && sudo apt install -y packer terraform || error_exit "Failed to install Packer and Terraform."
+  log "Packer and Terraform installed successfully."
+  log "Next, run the script again and choose 'Download ISO Files to Proxmox'."
 }
 
 download_iso() {
@@ -126,7 +141,7 @@ nohup wget -O windows10.iso https://software-static.download.prss.microsoft.com/
 nohup wget -O windows_server_2019.iso https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66749/17763.3650.221105-1748.rs5_release_svc_refresh_SERVER_EVAL_x64FRE_en-us.iso &
 nohup wget -O ubuntu-22.iso https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-live-server-amd64.iso &
 EOF
-  if [ $? -eq 0 ]; then
+  if [ $? -eq 0]; then
     log "ISO files download initiated."
   else
     error_exit "Failed to initiate ISO files download."
