@@ -44,3 +44,8 @@
         members:
           - '{{ first_user_login }}'
         state: present
+
+     - name: Set autologon for specific user
+      community.windows.win_auto_logon:
+        username: '{{ domain_admin_login }}'
+        password: '{{ domain_admin_password }}'
