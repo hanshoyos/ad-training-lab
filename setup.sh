@@ -44,10 +44,12 @@ configure_proxmox_users() {
   log "Configuring Proxmox users and roles..."
   read -p "Enter Proxmox User IP: " PROXMOX_USER_IP
   read -p "Enter Proxmox User Username: " PROXMOX_USER
-  read -sp "Enter Proxmox User Password: " PROXMOX_PASS
-  echo
 
-  sshpass -p $PROXMOX_PASS ssh $PROXMOX_USER@$PROXMOX_USER_IP << EOF > /tmp/proxmox_output.log 2>&1
+  echo "Enter Proxmox User Password:"
+  read -s PROXMOX_PASS
+
+  log "Executing SSH commands on Proxmox server..."
+  ssh $PROXMOX_USER@$PROXMOX_USER_IP << EOF > /tmp/proxmox_output.log 2>&1
 pveum role add provisioner -privs "Datastore.AllocateSpace Datastore.Audit Pool.Allocate Pool.Audit SDN.Use Sys.Audit Sys.Console Sys.Modify VM.Allocate VM.Audit VM.Clone VM.Config.CDROM VM.Config.Cloudinit VM.Config.CPU VM.Config.Disk VM.Config.HWType VM.Config.Memory VM.Config.Network VM.Console VM.Config.Options VM.Migrate VM.Monitor VM.PowerMgmt"
 pveum user add userprovisioner@pve
 pveum aclmod / -user userprovisioner@pve -role provisioner
@@ -134,14 +136,15 @@ download_all_iso_files_proxmox() {
   read -sp "Enter Proxmox User Password: " PROXMOX_PASS
   echo
 
-  sshpass -p $PROXMOX_PASS ssh $PROXMOX_USER@$PROXMOX_NODE_IP << EOF
+  log "Executing SSH commands on Proxmox server..."
+  ssh $PROXMOX_USER@$PROXMOX_NODE_IP << EOF
 cd /var/lib/vz/template/iso/ || exit 1
 nohup wget -O virtio-win.iso https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso &
 nohup wget -O windows10.iso https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66750/19045.2006.220908-0225.22h2_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso &
 nohup wget -O windows_server_2019.iso https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66749/17763.3650.221105-1748.rs5_release_svc_refresh_SERVER_EVAL_x64FRE_en-us.iso &
 nohup wget -O ubuntu-22.iso https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-live-server-amd64.iso &
 EOF
-  if [ $? -eq 0]; then
+  if [ $? -eq 0 ]; then
     log "ISO files download initiated."
   else
     error_exit "Failed to initiate ISO files download."
