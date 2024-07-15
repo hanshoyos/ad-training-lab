@@ -6,7 +6,7 @@ domain_name: '{{ domain_short|lower }}lab.local'
 
 domain_admin_login: '{{ domain_short }}\Administrator'
 domain_admin_ssh: '{{ domain_short }}\\Administrator'
-domain_admin_password: DomainAdminPassword.
+domain_admin_password: P@ssw0rd
 safe_mode_pass: SafeModePassword.
 
 ca_name: '{{ domain_short }}-CA'
@@ -14,16 +14,16 @@ ca_name: '{{ domain_short }}-CA'
 # used for vulns
 server_admin: 'serveradmin'
 web_admin: 'webadmin'
-first_user: 'snaretest'
+first_user: 'snare'
 
 first_user_login: '{{ domain_short }}\{{ first_user }}'
 first_user_ssh: '{{ domain_short }}\{{ first_user }}'
-first_user_password: 'Password1!'
+first_user_password: 'snare'
 
 server_admin_login: '{{ domain_short }}\{{ server_admin }}'
 server_admin_ssh: '{{ domain_short }}\\{{ server_admin }}'
-server_admin_password: GuessMyPassPls!
+server_admin_password: 'snare'
 
 web_admin_login: '{{ domain_short}}\webadmin'
 web_admin_ssh: '{{ domain_short}}\\webadmin'
-web_admin_password: 'just4Pass!'
+web_admin_password: 'snare'
