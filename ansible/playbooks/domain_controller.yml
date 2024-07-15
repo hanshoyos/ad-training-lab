@@ -51,11 +51,11 @@
         users:
         - Administrators
 
-    - name: Add snaretest local account (ws account)
+    - name: Add workstation local account (ws account)
       microsoft.ad.user:
         name: '{{ first_user }}'
-        firstname: snare
-        surname: test
+        firstname: Workstation
+        surname: Administrator
         password: '{{ first_user_password }}'
         state: present
         domain_username: Administrator
