@@ -12,9 +12,9 @@ safe_mode_pass: SafeModePassword.
 ca_name: '{{ domain_short }}-CA'
 
 # used for vulns
-server_admin: 'serveradmin'
+server_admin: 'fsadmin'
 web_admin: 'webadmin'
-first_user: 'snare'
+first_user: 'wsadmin'
 
 first_user_login: '{{ domain_short }}\{{ first_user }}'
 first_user_ssh: '{{ domain_short }}\{{ first_user }}'
