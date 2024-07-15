@@ -57,7 +57,7 @@
 
     - name: Creating FileServer shared folder
       win_share:
-        name: SharedFolder
+        name: Snare-Products
         description: All-in shared folder
         path: C:\Snare-Products
         list: yes
