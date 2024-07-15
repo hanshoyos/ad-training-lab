@@ -51,7 +51,7 @@
 
     - name: Copy directory to shared folder
       win_copy:
-        src: ../playbooks/snare-products
+        src: ../playbooks/Snare-Products
         dest: C:/Snare-Products
         recurse: yes
 
