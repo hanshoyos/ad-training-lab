@@ -5,7 +5,7 @@
   vars:
     gpo_name: MapSnareProductsDrive
     gpo_description: "GPO to map Snare-Products shared drive"
-    share_path: "\\\\{{ domain_name }}\\Snare-Products"
+    share_path: "\\\\fs\\Snare-Products"
     domain_dn: "DC={{ domain_short|lower }},DC=lab,DC=local"
     ps_script_src: "~/ad-training-lab/ansible/playbooks/Snare-Products/create_gpo_map_drive.ps1"
 
