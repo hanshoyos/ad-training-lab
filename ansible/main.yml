@@ -7,6 +7,7 @@
 - import_playbook: playbooks/webserver.yml
 - import_playbook: playbooks/workstation1.yml
 - import_playbook: playbooks/workstation2.yml
+- import_playbook: playbooks/MSSQL.yml
 # linux + monitoring
 #- import_playbook: playbooks/sysmon.yml
 
