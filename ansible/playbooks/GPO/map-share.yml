@@ -86,3 +86,11 @@
           - gpo_link.rc == 0
         fail_msg: "Failed to link the GPO to the domain."
         success_msg: "Successfully linked the GPO to the domain."
+
+    - name: Set permissions on Snare-Products shared folder
+      win_acl:
+        path: '\\SnareTraininglab.local\Snare-Products'
+        user: 'Everyone'
+        rights: fullcontrol
+        type: allow
+        state: present
