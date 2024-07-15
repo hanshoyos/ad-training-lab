@@ -1,4 +1,4 @@
-- name: CONFIGURING WORKSTATION 2
+- name: CONFIGURING WORKSTATION 1
   hosts: WS2
   gather_facts: no
   tasks:
@@ -37,10 +37,15 @@
         letter: 'Z'
         path: \\fs.{{ domain_name }}\Snare-Products
         state: present
-
+        
     - name: Add user to rdp group
       win_group_membership:
         name: Remote Desktop Users
         members:
           - '{{ first_user_login }}'
         state: present
+
+     - name: Set autologon for specific user
+      community.windows.win_auto_logon:
+        username: '{{ domain_admin_login }}'
+        password: '{{ domain_admin_password }}'
