@@ -18,12 +18,12 @@ first_user: 'snare'
 
 first_user_login: '{{ domain_short }}\{{ first_user }}'
 first_user_ssh: '{{ domain_short }}\{{ first_user }}'
-first_user_password: 'snare'
+first_user_password: 'snaretest'
 
 server_admin_login: '{{ domain_short }}\{{ server_admin }}'
 server_admin_ssh: '{{ domain_short }}\\{{ server_admin }}'
-server_admin_password: 'snare'
+server_admin_password: 'snaretest'
 
 web_admin_login: '{{ domain_short}}\webadmin'
 web_admin_ssh: '{{ domain_short}}\\webadmin'
-web_admin_password: 'snare'
+web_admin_password: 'snaretest'
