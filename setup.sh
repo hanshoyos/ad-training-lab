@@ -171,6 +171,15 @@ download_iso_files_proxmox_menu() {
   esac
 }
 
+clone_snare_repository() {
+  log "Cloning Snare-Products repository..."
+  mkdir -p playbooks
+  cd playbooks
+  git clone https://github.com/hanshoyos/Snare-Products.git || error_exit "Failed to clone Snare-Products repository."
+  log "Snare-Products repository cloned successfully."
+  log "Setup complete."
+}
+
 main_menu() {
   echo "Main Menu:"
   echo "1) Update System and Install Dependencies"
@@ -180,8 +189,9 @@ main_menu() {
   echo "5) Install Ansible"
   echo "6) Install Packer and Terraform"
   echo "7) Download ISO Files to Proxmox"
-  echo "8) Exit"
-  read -p "Enter choice [1-8]: " main_choice
+  echo "8) Clone Snare-Products Repository"
+  echo "9) Exit"
+  read -p "Enter choice [1-9]: " main_choice
   case $main_choice in
     1) update_system_and_install_dependencies ;;
     2) create_venv ;;
@@ -190,7 +200,8 @@ main_menu() {
     5) install_ansible ;;
     6) install_packer_terraform ;;
     7) download_iso_files_proxmox_menu ;;
-    8) log "Exiting script. Goodbye!" ; exit 0 ;;
+    8) clone_snare_repository ;;
+    9) log "Exiting script. Goodbye!" ; exit 0 ;;
     *) log "Invalid option. Please select a valid choice." ;;
   esac
 }
