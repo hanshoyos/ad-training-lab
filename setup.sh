@@ -179,7 +179,7 @@ download_snare_files() {
 
   # Function to download the second file
   download_file_2() {
-    curl -L -o Snare-Windows-Agent-(Desktop-Only)-v5.8.1-x64.exe "https://d2h0h41a2pqwb5.cloudfront.net/Snare-Windows-Agent-%28Desktop-Only%29-v5.8.1-x64.exe?Expires=1721103673&Signature=YrOFP1IqXR5kaKLyGUvmQry3mFzkkeI0izsG4wsjdDmbU68nBB7Pb5F1n~v4xmyX3MBlLSu115iSTGvEcSULXKBoY~QvQhtnMPqeiOmYBNEv2EBNwbCy6-MIlRuMAuRhTZV6Y~IVq-bjgimUITb0pBmB4OeDHMOQ2HnVF5mVDcab393PCpgv7KZe7-bUZfkfK9CQVz0a9falZC6ynY4ZrBF4eyrWyWXo44mSLLigyTtx3RTPUEpeFjlHT82WvopwtZiO7ydgBeH96LaAHuOczdgzXKHnrU3n7jr3c1-mQ9o4hqob9x4TBGI97wLvl-LrxzYcbSnXYTT7HFGQlCPVFA__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
+    curl -L -o Snare-Windows-Agent-\(Desktop-Only\)-v5.8.1-x64.exe "https://d2h0h41a2pqwb5.cloudfront.net/Snare-Windows-Agent-%28Desktop-Only%29-v5.8.1-x64.exe?Expires=1721103673&Signature=YrOFP1IqXR5kaKLyGUvmQry3mFzkkeI0izsG4wsjdDmbU68nBB7Pb5F1n~v4xmyX3MBlLSu115iSTGvEcSULXKBoY~QvQhtnMPqeiOmYBNEv2EBNwbCy6-MIlRuMAuRhTZV6Y~IVq-bjgimUITb0pBmB4OeDHMOQ2HnVF5mVDcab393PCpgv7KZe7-bUZfkfK9CQVz0a9falZC6ynY4ZrBF4eyrWyWXo44mSLLigyTtx3RTPUEpeFjlHT82WvopwtZiO7ydgBeH96LaAHuOczdgzXKHnrU3n7jr3c1-mQ9o4hqob9x4TBGI97wLvl-LrxzYcbSnXYTT7HFGQlCPVFA__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
   }
 
   # Function to download the third file
@@ -210,7 +210,7 @@ download_snare_files() {
   # Prompt user for which files to download
   echo "Which files would you like to download?"
   echo "1) Snare-Windows-Agent-v5.8.1-x64.exe"
-  echo "2) Snare-Windows-Agent-(Desktop-Only)-v5.8.1-x64.exe"
+  echo "2) Snare-Windows-Agent-\(Desktop-Only\)-v5.8.1-x64.exe"
   echo "3) Snare-Windows-Agent-WEC-v5.8.1-x64.exe"
   echo "4) Snare-Epilog-Agent-v5.8.1-x64.exe"
   echo "5) Snare-MSSQL-Agent-v5.8.1-x64.exe"
