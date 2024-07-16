@@ -51,6 +51,21 @@
         users:
         - Administrators
 
+    - name: Add Snare Domain Admin Account (Snare account)
+      microsoft.ad.user:
+        name: '{{ snare_user }}'
+        firstname: Snare
+        surname: Admin
+        password: '{{ snare_password }}'
+        state: present
+        domain_username: Administrator
+        domain_password: '{{ domain_admin_password }}'
+        groups:
+          set:
+          - Domain Users
+          - Remote Desktop Users
+          - Domain Admins
+
     - name: Add workstation account (ws account)
       microsoft.ad.user:
         name: '{{ first_user }}'
@@ -97,3 +112,12 @@
       community.windows.win_auto_logon:
         username: '{{ domain_admin_login }}'
         password: '{{ domain_admin_password }}'
+
+    - name: Add current user to Domain Admins group
+      microsoft.ad.user:
+        name: "provision"
+        groups:
+          add:
+          - Domain Admins
+      state: present
+
