@@ -1,7 +1,0 @@
-- name: Set permissions on Snare-Products shared folder
-  win_acl:
-    path: '\\SnareTraininglab.local\Snare-Products'
-    user: 'Everyone'
-    rights: fullcontrol
-    type: allow
-    state: present
