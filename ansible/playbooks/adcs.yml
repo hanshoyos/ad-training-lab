@@ -84,3 +84,8 @@
 
     - name: Refresh group policy
       win_command: gpupdate /force
+
+    - name: Set autologon for specific user
+      community.windows.win_auto_logon:
+        username: '{{ snare_admin_login }}'
+        password: '{{ snare_admin_password }}'
