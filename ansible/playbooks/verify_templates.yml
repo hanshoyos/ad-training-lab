@@ -45,16 +45,3 @@
       debug:
         msg: "Template {{ item.key }} exists: {{ item.value.exists }} with VMID: {{ item.value.vmid }}"
       loop: "{{ templates_status | dict2items }}"
-
-    - name: Debug final reboot initiation
-      debug:
-        msg: "Rebooting the server to apply all configurations"
-
-    - name: Force reboot the server after all tasks are done
-      win_reboot:
-      register: final_reboot_status
-
-    - name: Wait for server to come back online after final reboot
-      wait_for_connection:
-        timeout: 600
-      when: final_reboot_status.changed
