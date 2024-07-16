@@ -1,0 +1,28 @@
+---
+- name: Update all Windows machines
+  hosts: windows
+  gather_facts: no
+  tasks:
+    - name: Install Windows Updates
+      win_updates:
+        category_names:
+          - SecurityUpdates
+          - CriticalUpdates
+          - Updates
+          - UpdateRollups
+        state: installed
+      register: update_result
+
+    - name: Debug update result
+      debug:
+        msg: "Windows Updates result: {{ update_result }}"
+
+    - name: Reboot if updates were applied
+      win_reboot:
+      when: update_result.reboot_required
+      register: reboot_status
+
+    - name: Wait for server to come back online after update reboot
+      wait_for_connection:
+        timeout: 600
+      when: reboot_status.changed
