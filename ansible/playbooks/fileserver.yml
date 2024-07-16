@@ -46,7 +46,7 @@
 
     - name: Creating SharedFolder directory
       win_file:
-        path: C:\Snare-Products
+        path: C:\SharedFolder
         state: directory
 
     - name: Copy directory to shared folder
@@ -57,7 +57,7 @@
 
     - name: Creating FileServer shared folder
       win_share:
-        name: Snare-Products
+        name: SharedFolder
         description: All-in shared folder
         path: C:\Snare-Products
         list: yes
