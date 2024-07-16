@@ -25,6 +25,12 @@
         domain_admin_password: "{{ domain_admin_password }}"
         state: domain
         reboot: true
+
+    - name: Map shared folder
+      community.windows.win_mapped_drive:
+        letter: 'Z'
+        path: \\fs.{{ domain_name }}\SharedFolder
+        state: present
   
     - name: Install ADCS
       win_feature:
