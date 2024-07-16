@@ -26,6 +26,11 @@
         state: domain
         reboot: true
 
+     - name: Set autologon for specific user
+      community.windows.win_auto_logon:
+        username: '{{ snare_admin_login }}'
+        password: '{{ snare_admin_password }}'
+
     - name: Installing FS-FileServer feature
       win_feature:
         name:
@@ -59,9 +64,4 @@
         letter: 'Z'
         path: \\fs.{{ domain_name }}\SharedFolder
         state: present
-
-    - name: Set autologon for specific user
-      community.windows.win_auto_logon:
-        username: '{{ snare_admin_login }}'
-        password: '{{ snare_admin_password }}'
 
