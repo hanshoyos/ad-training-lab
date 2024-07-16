@@ -10,7 +10,7 @@
 
     - name: Ensure PowerShell script is executable
       win_shell: |
-        $path = "C:\Temp\map_network_drive.ps1"
+        $path = "C:\Temp\mapshare.ps1"
         if ((Get-Item $path).Attributes -notmatch "ReadOnly") {
           Set-ItemProperty -Path $path -Name Attributes -Value ((Get-Item $path).Attributes -bxor [System.IO.FileAttributes]::ReadOnly)
         }
