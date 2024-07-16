@@ -12,18 +12,23 @@ safe_mode_pass: SafeModePassword.
 ca_name: '{{ domain_short }}-CA'
 
 # used for vulns
+snare_admin: 'snareadmin'
 server_admin: 'fsadmin'
 web_admin: 'webadmin'
-first_user: 'wsadmin'
+fs_admin: 'wsadmin'
 
-first_user_login: '{{ domain_short }}\{{ first_user }}'
-first_user_ssh: '{{ domain_short }}\{{ first_user }}'
-first_user_password: 'snaretest'
+snare_login: '{{ domain_short }}\{{ snare_admin }}'
+snare_ssh: '{{ domain_short }}\{{ snare_admin }}'
+snare_password: 'snaretest'
+
+fs_admin_login: '{{ domain_short }}\{{ fs_admin }}'
+fs_admin_ssh: '{{ domain_short }}\{{ fs_admin }}'
+fs_admin_password: 'snaretest'
 
 server_admin_login: '{{ domain_short }}\{{ server_admin }}'
 server_admin_ssh: '{{ domain_short }}\\{{ server_admin }}'
 server_admin_password: 'snaretest'
 
-web_admin_login: '{{ domain_short}}\webadmin'
-web_admin_ssh: '{{ domain_short}}\\webadmin'
+web_admin_login: '{{ domain_short}}\{{ web_admin }}'
+web_admin_ssh: '{{ domain_short}}{{ web_admin }}'
 web_admin_password: 'snaretest'
