@@ -1,3 +1,4 @@
+---
 - name: CONFIGURING WORKSTATION 1
   hosts: WS1
   gather_facts: no
@@ -6,24 +7,57 @@
       win_hostname:
         name: "{{ inventory_hostname }}"
       register: rename
-      
-    - name: Reboot after rename
+
+    - name: Debug rename output
+      debug:
+        msg: "Server rename result: {{ rename }}"
+
+    - name: Reboot after rename if required
       win_reboot:
       when: rename.reboot_required
-      
+      register: rename_reboot_status
+
+    - name: Wait for server to come back online after rename reboot
+      wait_for_connection:
+        timeout: 600
+      when: rename_reboot_status.changed
+
+    - name: Debug DNS server
+      debug:
+        msg: "DNS server will be set to {{ hostvars['DC']['ansible_host'] }}"
+
     - name: Set DNS to Domain Controller
       win_dns_client:
         adapter_names: '*'
         dns_servers:
         - "{{ hostvars['DC']['ansible_host'] }}"
-      
+
+    - name: Debug domain join parameters
+      debug:
+        msg: "Joining domain {{ domain_name }} with user Administrator@{{ domain_name }}"
+
     - name: Join Domain
       microsoft.ad.membership:
         dns_domain_name: "{{ domain_name }}"
-        domain_admin_user: Administrator@{{ domain_name }}
+        domain_admin_user: "Administrator@{{ domain_name }}"
         domain_admin_password: "{{ domain_admin_password }}"
         state: domain
         reboot: true
+      register: join_domain_status
+
+    - name: Reboot after domain join if required
+      win_reboot:
+      when: join_domain_status.changed
+      register: domain_reboot_status
+
+    - name: Wait for server to come back online after domain join reboot
+      wait_for_connection:
+        timeout: 600
+      when: domain_reboot_status.changed
+
+    - name: Debug mapped drive parameters
+      debug:
+        msg: "Mapping shared folder to Z: drive with path \\\\fs.{{ domain_name }}\\SharedFolder"
 
     - name: Map shared folder
       community.windows.win_mapped_drive:
@@ -31,7 +65,24 @@
         path: \\fs.{{ domain_name }}\SharedFolder
         state: present
 
+    - name: Debug autologon parameters
+      debug:
+        msg: "Setting autologon for user {{ snare_admin_login }}"
+
     - name: Set autologon for specific user
       community.windows.win_auto_logon:
         username: '{{ snare_admin_login }}'
-        password: '{{ snare_admin_login }}'
+        password: '{{ snare_admin_password }}'
+
+    - name: Debug final reboot initiation
+      debug:
+        msg: "Rebooting the server to apply all configurations"
+
+    - name: Force reboot the server after all tasks are done
+      win_reboot:
+      register: final_reboot_status
+
+    - name: Wait for server to come back online after final reboot
+      wait_for_connection:
+        timeout: 600
+      when: final_reboot_status.changed
