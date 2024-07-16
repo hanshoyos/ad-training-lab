@@ -1,0 +1,4 @@
+# win
+- import_playbook: playbooks/updateSAMIP.yml
+- import_playbook: playbooks/Install-SAM-Windows.yml
+- import_playbook: playbooks/Install-Windows-Agent.yml
