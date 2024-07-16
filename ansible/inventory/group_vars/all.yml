@@ -13,9 +13,9 @@ ca_name: '{{ domain_short }}-CA'
 
 # used for vulns
 snare_admin: 'snareadmin'
-server_admin: 'fsadmin'
+fs_admin: 'fsadmin'
 web_admin: 'webadmin'
-fs_admin: 'wsadmin'
+ws_admin: 'wsadmin'
 
 snare_login: '{{ domain_short }}\{{ snare_admin }}'
 snare_ssh: '{{ domain_short }}\{{ snare_admin }}'
@@ -25,10 +25,10 @@ fs_admin_login: '{{ domain_short }}\{{ fs_admin }}'
 fs_admin_ssh: '{{ domain_short }}\{{ fs_admin }}'
 fs_admin_password: 'snaretest'
 
-server_admin_login: '{{ domain_short }}\{{ server_admin }}'
-server_admin_ssh: '{{ domain_short }}\\{{ server_admin }}'
-server_admin_password: 'snaretest'
-
 web_admin_login: '{{ domain_short}}\{{ web_admin }}'
 web_admin_ssh: '{{ domain_short}}{{ web_admin }}'
 web_admin_password: 'snaretest'
+
+ws_admin_login: '{{ domain_short }}\{{ ws_admin }}'
+ws_admin_ssh: '{{ domain_short }}\\{{ ws_admin }}'
+ws_admin_password: 'snaretest'
