@@ -171,12 +171,100 @@ download_iso_files_proxmox_menu() {
   esac
 }
 
-clone_snare_repository() {
-  log "Cloning Snare-Products repository..."
-  cd ~/ad-training-lab/ansible/playbooks
-  git clone https://github.com/hanshoyos/Snare-Products.git || error_exit "Failed to clone Snare-Products repository."
-  log "Snare-Products repository cloned successfully."
-  log "Setup complete."
+download_snare_files() {
+  # Function to download the first file
+  download_file_1() {
+    curl -L -o Snare-Windows-Agent-v5.8.1-x64.exe "https://d2h0h41a2pqwb5.cloudfront.net/Snare-Windows-Agent-v5.8.1-x64.exe?Expires=1721103403&Signature=UvYgi4K11buGUATcGtJmz5PheCqYrIMiZXjgJfjz5MdHW79ryNO6578qobbcSxZKgqntbOypMY1csaBaKP3tW18dQDVYoQtpgSPFAYDotJfo3tLsr2NqpHsSYABuyZOVeQ-VYzY3jsS4GK4OJH8U2uTtzQMaoFYP2fqFuMn-kNONtym6zo~FxMkwqGazWZ06-4gph2rvJ2tJ5xQE1UzjXWYpaeqL1RYeofj~KRmSDoaa4IVowyKr0XlmJaPXTgTPS1fvmcSS~piAZHA8pgrObKZGyPibEwplRYLwnI4iFuqIz8geTbcyiKeU1mLyg~zUrmCL1w5LbCliFBswoZRiSg__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
+  }
+
+  # Function to download the second file
+  download_file_2() {
+    curl -L -o Snare-Windows-Agent-(Desktop-Only)-v5.8.1-x64.exe "https://d2h0h41a2pqwb5.cloudfront.net/Snare-Windows-Agent-%28Desktop-Only%29-v5.8.1-x64.exe?Expires=1721103673&Signature=YrOFP1IqXR5kaKLyGUvmQry3mFzkkeI0izsG4wsjdDmbU68nBB7Pb5F1n~v4xmyX3MBlLSu115iSTGvEcSULXKBoY~QvQhtnMPqeiOmYBNEv2EBNwbCy6-MIlRuMAuRhTZV6Y~IVq-bjgimUITb0pBmB4OeDHMOQ2HnVF5mVDcab393PCpgv7KZe7-bUZfkfK9CQVz0a9falZC6ynY4ZrBF4eyrWyWXo44mSLLigyTtx3RTPUEpeFjlHT82WvopwtZiO7ydgBeH96LaAHuOczdgzXKHnrU3n7jr3c1-mQ9o4hqob9x4TBGI97wLvl-LrxzYcbSnXYTT7HFGQlCPVFA__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
+  }
+
+  # Function to download the third file
+  download_file_3() {
+    curl -L -o Snare-Windows-Agent-WEC-v5.8.1-x64.exe "https://d2h0h41a2pqwb5.cloudfront.net/Snare-Windows-Agent-WEC-v5.8.1-x64.exe?Expires=1721103765&Signature=WTE~dcyMr1-CqLE5QyaudJGBKgQywJNwxE4ZR7pf1jtDUVH97dPT-5Y9Wfz8lVvtBVCOd2tlg93KCcKdj2IMmAgiva5Kn5BJ0bC8QMY465mErBt~grK6-gCAIQYUadz2rFUO1dnR6ZHauTActiBTM1dVN0laHL9Xxaj2LLObqnQkmivdjyu9KwS5byBc1Cn3rcye5QEOSAckAW1wXEpGHO5cJkqFFsOzFydIvtTGWf58Dj~Pgc5-X~C91lWYjmyruXB36-TfrdJLmmWYSxLtq0ltJgYGR9gBw7BT1fB7cGo3~iydr1dvYUIfOt--Y0UxVP9VS5DKXo8iYxMEbDqAcw__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
+  }
+
+  # Function to download the fourth file
+  download_file_4() {
+    curl -L -o Snare-Epilog-Agent-v5.8.1-x64.exe "https://d2h0h41a2pqwb5.cloudfront.net/Snare-Epilog-Agent-v5.8.1-x64.exe?Expires=1721103820&Signature=b0Q8dmx~xwpY7aas3dl6a1tG03ZmDw~ctb2CWBr~QpsQzD973TsyEIv5u~bNpE4FY2kWwqLtSmkjaMtc4rFhoyjAqzN8UqFaxNaHFoB7ILfCK5MZO0zhbOtK5bWhzkJhxZwqCk6U45cyjhGUR6W4a6KwZk-WPPDw39Bpe-ouwvXwM6rQkwKBSwNJuzuJ0jFySKbHRXDFozlVhtTCfqNVvD7dsekQAsAlxUOlam1N3xAFlPR5TydwDve~bcB6mYC12-NwG-lzfQ~vTyAGiDVpXKWnU1vdVxi8PsbKKdKiqhwzSplNQV4e9VDuRBdiRsLo1ANMEEQ3SsYBCsbO-~UGeA__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
+  }
+
+  # Function to download the fifth file
+  download_file_5() {
+    curl -L -o Snare-MSSQL-Agent-v5.8.1-x64.exe "https://d2h0h41a2pqwb5.cloudfront.net/Snare-MSSQL-Agent-v5.8.1-x64.exe?Expires=1721103836&Signature=OzCcaBit8Oak87ZFR~60E8x5xins7RLC7vul-mXJnEkdehNvWebwViDFTTYAJLKrPDH5vwql7-Q7eM7wqQbK~A0Dh8ktembn0MQq02iR06r5dDKzKBmsUeIKXlrIP1rEkClWba1RaBluDSYSLRIdUoKvzL9DNSFot1zTVU4ALTsa7DPkuojEISgbtMP4-X5k0y6NJBg3uepFuoMOwdASB8Hmu7a~dMQCJYQT5wAt-EKdG76xWeAHMFTlekvQcYibkI9j~p5IqQsqOSsew3KhfGDjwQsYCVsxdcqjMRp5zIEvd1sQQ0rwIXGflb4t16jMrDD~xiBUdYHJjtaJMpKpAw__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
+  }
+
+  # Function to download the sixth file
+  download_file_6() {
+    curl -L -o MSI-3.1.1.zip "https://d2h0h41a2pqwb5.cloudfront.net/MSI-3.1.1.zip?Expires=1721103861&Signature=YiZPfg8h~Wvpr8lL~ty32ufRQWGqEYaJSl0ke~CA7IUCSkWT6XqEvgBD1LUnapdG7b0zhvDgHVWdkZOMnpVThPW22QGSVRLN5paukb-zLf3jqS-qW-JW31cY1TQCG4BTJvT2oUr-9B4~kU~jxK5x74euQVvTLTyZc8p~2e9rfwnlsaUaEDLQ4aUyz18uJbcTz~aRUjt9eS6OyV5j01KANgSg-e~2cmcGgIcrTuK7gc4imFIYIC2fDLy0LSWjCdEvTi3pe2zZPe0uvA4ipC474sTrnmW5ZjHNfS-ZjeVXerA1AgfttCkKHwgV9qHHrvu3-OdCv7apnPGwYRwiK81FzQ__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
+  }
+
+  # Function to download the seventh file
+  download_file_7() {
+    curl -L -o Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb "https://d2h0h41a2pqwb5.cloudfront.net/Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb?Expires=1721103937&Signature=ih9smMa~6eFmWxv4UmPaMj8~U8p-Nw~m2NWBpA13Qi9AZbTnfs-ABzC4bIwBS9ItfdSgOXe0VEcE~UYV99BmjNARry5aE3U0KrSViRMUnCpY39Qj~jpzsBCbGb0GYDThGUTYpteDP664b~Tu1iYf0uDux5og1HF6sbBnrDQ2481RU8zWArGnhZLl~ggopVSLF2rKSGQY~ZNp7RXQnTdGIJ-lgEPe61KISZuie8qJUN34opapjMuaDEs-T7LwBxqhroKsbqjCo9ooOW9S9hqdQCbY8wMM1xNmeWnh198ZdqSU6THcBhDrxDT-MKg~WLEddzd07ElE2lc-1bgqpHnatg__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
+  }
+
+  # Prompt user for which files to download
+  echo "Which files would you like to download?"
+  echo "1) Snare-Windows-Agent-v5.8.1-x64.exe"
+  echo "2) Snare-Windows-Agent-(Desktop-Only)-v5.8.1-x64.exe"
+  echo "3) Snare-Windows-Agent-WEC-v5.8.1-x64.exe"
+  echo "4) Snare-Epilog-Agent-v5.8.1-x64.exe"
+  echo "5) Snare-MSSQL-Agent-v5.8.1-x64.exe"
+  echo "6) MSI-3.1.1.zip"
+  echo "7) Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb"
+  echo "8) All files"
+  read -p "Enter your choice (1/2/3/4/5/6/7/8): " choice
+
+  # Download the selected files
+  case $choice in
+    1)
+      echo "Downloading Snare-Windows-Agent-v5.8.1-x64.exe..."
+      download_file_1
+      ;;
+    2)
+      echo "Downloading Snare-Windows-Agent-(Desktop-Only)-v5.8.1-x64.exe..."
+      download_file_2
+      ;;
+    3)
+      echo "Downloading Snare-Windows-Agent-WEC-v5.8.1-x64.exe..."
+      download_file_3
+      ;;
+    4)
+      echo "Downloading Snare-Epilog-Agent-v5.8.1-x64.exe..."
+      download_file_4
+      ;;
+    5)
+      echo "Downloading Snare-MSSQL-Agent-v5.8.1-x64.exe..."
+      download_file_5
+      ;;
+    6)
+      echo "Downloading MSI-3.1.1.zip..."
+      download_file_6
+      ;;
+    7)
+      echo "Downloading Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb..."
+      download_file_7
+      ;;
+    8)
+      echo "Downloading all files..."
+      download_file_1
+      download_file_2
+      download_file_3
+      download_file_4
+      download_file_5
+      download_file_6
+      download_file_7
+      ;;
+    *)
+      echo "Invalid choice. Please run the script again and select a valid option."
+      ;;
+  esac
+
+  echo "Download(s) completed."
 }
 
 install_ansible_collections() {
@@ -195,7 +283,7 @@ main_menu() {
   echo "5) Install Ansible"
   echo "6) Install Packer and Terraform"
   echo "7) Download ISO Files to Proxmox"
-  echo "8) Clone Snare-Products Repository"
+  echo "8) Download Snare Files"
   echo "9) Install Ansible Collections and Python Packages"
   echo "10) Exit"
   read -p "Enter choice [1-10]: " main_choice
@@ -207,7 +295,7 @@ main_menu() {
     5) install_ansible ;;
     6) install_packer_terraform ;;
     7) download_iso_files_proxmox_menu ;;
-    8) clone_snare_repository ;;
+    8) download_snare_files ;;
     9) install_ansible_collections ;;
     10) log "Exiting script. Goodbye!" ; exit 0 ;;
     *) log "Invalid option. Please select a valid choice." ;;
