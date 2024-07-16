@@ -293,7 +293,7 @@ download_snare_files() {
 install_ansible_collections() {
   log "Installing Ansible collections and required Python packages..."
   pip3 install ansible pywinrm jmespath || error_exit "Failed to install Python packages."
-  ansible-galaxy collection install community.windows microsoft.ad || error_exit "Failed to install Ansible collections."
+  ansible-galaxy collection install community.windows community.general microsoft.ad || error_exit "Failed to install Ansible collections."
   log "Ansible collections and required Python packages installed successfully."
 }
 
