@@ -8,15 +8,27 @@
         name: "{{ inventory_hostname }}"
       register: rename
       
+    - name: Debug rename output
+      debug:
+        var: rename
+      
     - name: Reboot after rename
       win_reboot:
       when: rename.reboot_required
+      
+    - name: Debug DNS server
+      debug:
+        msg: "DNS server will be set to {{ hostvars['DC']['ansible_host'] }}"
       
     - name: Set DNS to Domain Controller
       win_dns_client:
         adapter_names: '*'
         dns_servers:
         - "{{ hostvars['DC']['ansible_host'] }}"
+      
+    - name: Debug domain join parameters
+      debug:
+        msg: "Joining domain {{ domain_name }} with user Administrator@{{ domain_name }}"
       
     - name: Join Domain
       microsoft.ad.membership:
@@ -26,6 +38,10 @@
         state: domain
         reboot: true
 
+    - name: Debug autologon parameters
+      debug:
+        msg: "Setting autologon for user {{ snare_admin_login }}"
+      
     - name: Set autologon for specific user
       community.windows.win_auto_logon:
         username: '{{ snare_admin_login }}'
@@ -49,6 +65,10 @@
         dest: C:/SharedFolder
         recurse: yes
 
+    - name: Debug shared folder parameters
+      debug:
+        msg: "Creating shared folder with full access for {{ domain_short }}\\Domain Admins, change access for {{ domain_short }}\\Domain Users, and read access for Everyone"
+
     - name: Creating FileServer shared folder
       win_share:
         name: SharedFolder
@@ -59,9 +79,21 @@
         change: '{{ domain_short }}\Domain Users'
         read: Everyone
 
+    - name: Debug mapped drive parameters
+      debug:
+        msg: "Mapping shared folder to Z: drive with path \\\\fs.{{ domain_name }}\\SharedFolder"
+      
     - name: Map shared folder
       community.windows.win_mapped_drive:
         letter: 'Z'
         path: \\fs.{{ domain_name }}\SharedFolder
         state: present
-
+    
+    - name: Reboot the server after all tasks are done
+      win_reboot:
+      register: reboot_status
+    
+    - name: Wait for server to come back online
+      wait_for_connection:
+        timeout: 300
+      when: reboot_status.changed
