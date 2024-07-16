@@ -1,0 +1,39 @@
+---
+- name: Verify the creation of Proxmox templates
+  hosts: localhost
+  gather_facts: no
+  vars:
+    proxmox_api_id: "userprovisioner@pve!provisioner-token"
+    proxmox_api_token: "edd743a6-4b92-4fd3-8a93-4f9fa60a88cd"
+    proxmox_node_ip: "192.168.10.20"
+    proxmox_node_name: "pve"
+    templates:
+      - name: "traininglab-server"
+      - name: "traininglab-ws"
+      - name: "traininglab-win2019"
+    api_url: "https://{{ proxmox_node_ip }}:8006/api2/json/nodes/{{ proxmox_node_name }}/qemu"
+
+  tasks:
+    - name: Get all VMs from Proxmox
+      uri:
+        url: "{{ api_url }}"
+        method: GET
+        headers:
+          Authorization: "PVEAPIToken={{ proxmox_api_id }}={{ proxmox_api_token }}"
+        validate_certs: false
+      register: all_vms_response
+
+    - name: Set fact for all VMs
+      set_fact:
+        all_vms: "{{ all_vms_response.json.data }}"
+
+    - name: Verify if templates exist
+      set_fact:
+        templates_status: "{{ templates_status | default({}) | combine({ item.name: {'exists': item.name in all_vms | map(attribute='name') | list, 'vmid': (all_vms | selectattr('name', 'equalto', item.name) | map(attribute='vmid') | first) } }) }}"
+      loop: "{{ templates }}"
+      when: all_vms is defined
+
+    - name: Display template existence
+      debug:
+        msg: "Template {{ item.key }} exists: {{ item.value.exists }} with VMID: {{ item.value.vmid }}"
+      loop: "{{ templates_status | dict2items }}"
