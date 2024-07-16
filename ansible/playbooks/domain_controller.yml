@@ -93,17 +93,6 @@
           - Domain Users
           - Remote Desktop Users
 
-    - name: Get the current username
-      win_shell: echo $env:USERNAME
-      register: current_user
-
-    - name: Add current user to Domain Admins group
-      community.windows.win_ad_group_membership:
-        name: "Domain Admins"
-        members:
-          - "{{ current_user.stdout }}"
-        state: present
-
     - name: Set autologon for specific user
       community.windows.win_auto_logon:
         username: '{{ domain_admin_login }}'
