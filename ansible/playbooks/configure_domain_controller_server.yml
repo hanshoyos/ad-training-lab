@@ -7,11 +7,25 @@
       win_hostname:
         name: "{{ inventory_hostname }}"
       register: rename
-      
-    - name: Reboot after rename
+
+    - name: Debug rename output
+      debug:
+        msg: "Server rename result: {{ rename }}"
+
+    - name: Reboot after rename if required
       win_reboot:
       when: rename.reboot_required
-   
+      register: rename_reboot_status
+
+    - name: Wait for server to come back online after rename reboot
+      wait_for_connection:
+        timeout: 600
+      when: rename_reboot_status.changed
+
+    - name: Debug AD and DNS install initiation
+      debug:
+        msg: "Starting installation of Active Directory and DNS Server Role"
+
     - name: Installing Active Directory and DNS Server Role
       win_feature:
         name:
@@ -22,10 +36,18 @@
         state: present
       register: result
 
+    - name: Debug AD and DNS install result
+      debug:
+        msg: "Active Directory and DNS Server Role installation result: {{ result }}"
+
     - name: Change Administrator password
       win_user:
         name: Administrator
         password: "{{ domain_admin_password }}"
+
+    - name: Debug domain creation initiation
+      debug:
+        msg: "Creating domain {{ domain_name }} with NetBIOS name {{ domain_short }}"
 
     - name: Create domain
       microsoft.ad.domain:
@@ -33,23 +55,40 @@
         domain_netbios_name: "{{ domain_short }}"
         safe_mode_password: "{{ safe_mode_pass }}"
         reboot: true
+      register: domain_result
 
-    - name: Set internal DNS server 
+    - name: Debug domain creation result
+      debug:
+        msg: "Domain creation result: {{ domain_result }}"
+
+    - name: Set internal DNS server
       win_dns_client:
         adapter_names: '*'
         ipv4_addresses:
         - '127.0.0.1'
+
+    - name: Debug DNS forwarders configuration
+      debug:
+        msg: "Configuring DNS forwarders to {{ dns_forwarders }}"
 
     - name: Configure DNS forwarders
       ansible.windows.win_powershell:
         script: |
           Set-DNSServerForwarder -IPAddress {{ dns_forwarders }}
 
+    - name: Debug RDP user allowance
+      debug:
+        msg: "Allowing RDP access to Administrators"
+
     - name: Allow RDP to specific users
       ansible.windows.win_user_right:
         name: SeRemoteInteractiveLogonRight
         users:
         - Administrators
+
+    - name: Debug Snare Domain Admin account creation
+      debug:
+        msg: "Creating Snare Domain Admin account with username {{ snare_admin }}"
 
     - name: Add Snare Domain Admin Account (Snare account)
       microsoft.ad.user:
@@ -66,6 +105,10 @@
           - Remote Desktop Users
           - Domain Admins
 
+    - name: Debug workstation admin account creation
+      debug:
+        msg: "Creating workstation admin account with username {{ ws_admin }}"
+
     - name: Add workstation account (ws account)
       microsoft.ad.user:
         name: '{{ ws_admin }}'
@@ -80,6 +123,10 @@
           - Domain Users
           - Remote Desktop Users
           - Domain Admins
+
+    - name: Debug web admin account creation
+      debug:
+        msg: "Creating web admin account with username {{ web_admin }}"
 
     - name: Add webadmin account (web admin account)
       microsoft.ad.user:
@@ -96,6 +143,10 @@
           - Remote Desktop Users
           - Domain Admins
 
+    - name: Debug fs admin account creation
+      debug:
+        msg: "Creating fs admin account with username {{ fs_admin }}"
+
     - name: Add fsadmin account (fs admin account)
       microsoft.ad.user:
         name: '{{ fs_admin }}'
@@ -111,8 +162,24 @@
           - Remote Desktop Users
           - Domain Admins
 
+    - name: Debug autologon setting
+      debug:
+        msg: "Setting autologon for user {{ snare_admin_login }}"
+
     - name: Set autologon for specific user
       community.windows.win_auto_logon:
         username: '{{ snare_admin_login }}'
         password: '{{ snare_admin_password }}'
 
+    - name: Debug final reboot initiation
+      debug:
+        msg: "Rebooting the server to apply all configurations"
+
+    - name: Force reboot the server after all tasks are done
+      win_reboot:
+      register: final_reboot_status
+
+    - name: Wait for server to come back online after final reboot
+      wait_for_connection:
+        timeout: 600
+      when: final_reboot_status.changed
