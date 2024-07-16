@@ -1,5 +1,5 @@
 - name: CONFIGURING WORKSTATION 1
-  hosts: WS2
+  hosts: WS1
   gather_facts: no
   tasks:
     - name: Rename server
@@ -25,27 +25,13 @@
         state: domain
         reboot: true
 
-    - name: Allow RDP to specific users
-      ansible.windows.win_user_right:
-        name: SeRemoteInteractiveLogonRight
-        users:
-        - Administrators
-        - Remote Desktop Users
-
     - name: Map shared folder
       community.windows.win_mapped_drive:
         letter: 'Z'
-        path: \\fs.{{ domain_name }}\Snare-Products
-        state: present
-        
-    - name: Add user to rdp group
-      win_group_membership:
-        name: Remote Desktop Users
-        members:
-          - '{{ first_user_login }}'
+        path: \\fs.{{ domain_name }}\SharedFolder
         state: present
 
      - name: Set autologon for specific user
       community.windows.win_auto_logon:
-        username: '{{ domain_admin_login }}'
-        password: '{{ domain_admin_password }}'
+        username: '{{ snare_admin_login }}'
+        password: '{{ snare_admin_login }}'
