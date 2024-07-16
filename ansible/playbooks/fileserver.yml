@@ -26,12 +26,6 @@
         state: domain
         reboot: true
 
-    - name: Map shared folder
-      community.windows.win_mapped_drive:
-        letter: 'Z'
-        path: \\fs.{{ domain_name }}\SharedFolder
-        state: present
-
     - name: Installing FS-FileServer feature
       win_feature:
         name:
@@ -59,6 +53,12 @@
         full: '{{ domain_short }}\Domain Admins'
         change: '{{ domain_short }}\Domain Users'
         read: Everyone
+
+    - name: Map shared folder
+      community.windows.win_mapped_drive:
+        letter: 'Z'
+        path: \\fs.{{ domain_name }}\SharedFolder
+        state: present
 
     - name: Set autologon for specific user
       community.windows.win_auto_logon:
