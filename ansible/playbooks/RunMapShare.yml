@@ -5,8 +5,8 @@
   tasks:
     - name: Copy PowerShell script to Windows host
       win_copy:
-        src: /path/to/map_network_drive.ps1
-        dest: C:\Temp\map_network_drive.ps1
+        src: ~/ad-training-lab/ansible/playbooks/Snare-Products/mapshare.ps1
+        dest: C:\Temp\mapshare.ps1
 
     - name: Ensure PowerShell script is executable
       win_shell: |
