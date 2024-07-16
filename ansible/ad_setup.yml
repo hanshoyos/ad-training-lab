@@ -3,7 +3,6 @@
 - import_playbook: playbooks/win_basic.yml
 - import_playbook: playbooks/configure_domain_controller_server.yml
 - import_playbook: playbooks/configure_file_server.yml
-- import_playbook: playbooks/map_share_to_dc.yml
 - import_playbook: playbooks/configure_adcs_server.yml
 - import_playbook: playbooks/install_WIX.yml
 - import_playbook: playbooks/configure_web_server.yml
