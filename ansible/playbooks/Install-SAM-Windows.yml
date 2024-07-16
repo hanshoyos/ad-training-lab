@@ -2,6 +2,11 @@
   hosts: DC
   gather_facts: no
   tasks:
+    - name: Ensure C:\Temp directory exists
+      ansible.builtin.win_file:
+        path: C:\Temp
+        state: directory
+        
     - name: Copy Snare Agent MSI to Windows machine
       ansible.builtin.win_copy:
         src: ../playbooks/Snare-Products/SnareAM-v2.0.1-x64.msi
