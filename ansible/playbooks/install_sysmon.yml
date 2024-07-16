@@ -1,34 +1,28 @@
 ---
-- name: ENABLE SYSMON ON WINDOWS HOSTS
+- name: Copy Files to File Server
   hosts: windows
   gather_facts: no
   tasks:
-    - name: Downloading Sysmon
-      win_get_url:
-        url: https://live.sysinternals.com/Sysmon64.exe
-        dest: C:\Users\{{ ansible_user }}\Downloads\Sysmon64.exe
+    - name: Copy directory to shared folder
+      win_copy:
+        src: ../playbooks/SharedFolder
+        dest: C:/Snare-Products
+        recurse: yes
+      register: copy_files
 
-    - name: Downloading Sysmon Config
-      win_get_url:
-        url: https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml
-        dest: C:\Users\{{ ansible_user }}\Downloads\sysmonconfig-export.xml
+    - name: Debug copy files result
+      debug:
+        msg: "Copy directory to shared folder result: {{ copy_files }}"
 
-    - name: Get Sysmon service
-      win_service:
-        name: "Sysmon64"
-      register: sysmonhere
+    - name: Debug final reboot initiation
+      debug:
+        msg: "Rebooting the server to apply all configurations"
 
-    - name: Installing Sysmon as as Service
-      win_shell: .\Sysmon64.exe -accepteula -i .\sysmonconfig-export.xml
-      when: not sysmonhere.exists
-      args:
-        chdir: C:\Users\{{ ansible_user }}\Downloads
+    - name: Force reboot the server after all tasks are done
+      win_reboot:
+      register: final_reboot_status
 
-    - name: Removing Sysmon installation files
-      win_file:
-        path: "C:\\Users\\{{ ansible_user }}\\Downloads\\{{ item }}"
-        state: absent
-      loop: "{{ sysmon_files }}"
-      vars:
-        sysmon_files: ["Sysmon64.exe", "sysmonconfig-export.xml"]
-
+    - name: Wait for server to come back online after final reboot
+      wait_for_connection:
+        timeout: 600
+      when: final_reboot_status.changed
