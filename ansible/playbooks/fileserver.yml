@@ -52,14 +52,14 @@
     - name: Copy directory to shared folder
       win_copy:
         src: ../playbooks/Snare-Products
-        dest: C:/Snare-Products
+        dest: C:/SharedFolder
         recurse: yes
 
     - name: Creating FileServer shared folder
       win_share:
         name: SharedFolder
         description: All-in shared folder
-        path: C:\Snare-Products
+        path: C:\SharedFolder
         list: yes
         full: '{{ domain_short }}\Domain Admins'
         change: '{{ domain_short }}\Domain Users'
@@ -67,6 +67,6 @@
 
     - name: Set autologon for specific user
       community.windows.win_auto_logon:
-        username: '{{ domain_admin_login }}'
-        password: '{{ domain_admin_password }}'
+        username: '{{ snare_admin_login }}'
+        password: '{{ snare_admin_password }}'
 
