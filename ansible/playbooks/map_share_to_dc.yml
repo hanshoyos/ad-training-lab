@@ -1,9 +1,0 @@
-- name: Mapping Shared Folder to DC
-  hosts: DC
-  gather_facts: no
-  tasks:
-    - name: Map shared folder
-      community.windows.win_mapped_drive:
-        letter: 'Z'
-        path: \\fs.{{ domain_name }}\SharedFolder
-        state: present
