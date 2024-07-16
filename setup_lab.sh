@@ -119,7 +119,7 @@ install_packer_terraform() {
 download_iso() {
   local url=$1
   local filename=$2
-  ssh $PROXMOX_USER@$PROXMOX_NODE_IP "cd /var/lib/vz/template/iso/ && nohup wget -O $filename $url &"
+  ssh $PROXMOX_USER@$PROXMOX_NODE_IP "cd /var/lib/vz/template/iso/ && if [ ! -f $filename ]; then nohup wget -O $filename $url & fi"
   if [ $? -eq 0 ]; then
     log "$filename download initiated."
   else
@@ -137,10 +137,10 @@ download_all_iso_files_proxmox() {
   log "Executing SSH commands on Proxmox server..."
   ssh $PROXMOX_USER@$PROXMOX_NODE_IP << EOF
 cd /var/lib/vz/template/iso/ || exit 1
-nohup wget -O virtio-win.iso https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso &
-nohup wget -O windows10.iso https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66750/19045.2006.220908-0225.22h2_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso &
-nohup wget -O windows_server_2019.iso https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66749/17763.3650.221105-1748.rs5_release_svc_refresh_SERVER_EVAL_x64FRE_en-us.iso &
-nohup wget -O ubuntu-22.iso https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-live-server-amd64.iso &
+if [ ! -f virtio-win.iso ]; then nohup wget -O virtio-win.iso https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso & fi
+if [ ! -f windows10.iso ]; then nohup wget -O windows10.iso https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66750/19045.2006.220908-0225.22h2_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso & fi
+if [ ! -f windows_server_2019.iso ]; then nohup wget -O windows_server_2019.iso https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66749/17763.3650.221105-1748.rs5_release_svc_refresh_SERVER_EVAL_x64FRE_en-us.iso & fi
+if [ ! -f ubuntu-22.iso ]; then nohup wget -O ubuntu-22.iso https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-live-server-amd64.iso & fi
 EOF
   if [ $? -eq 0 ]; then
     log "ISO files download initiated."
@@ -149,143 +149,55 @@ EOF
   fi
 }
 
-download_iso_files_proxmox_menu() {
-  echo "ISO Download Menu:"
-  echo "1) Download all ISO files"
-  echo "2) Download Virtio ISO"
-  echo "3) Download Windows 10 ISO"
-  echo "4) Download Windows Server 2019 ISO"
-  echo "5) Download Ubuntu 22.04 ISO"
-  echo "6) Back to main menu"
-  read -p "Enter choice [1-6]: " iso_choice
-  case $iso_choice in
-    1) download_all_iso_files_proxmox ;;
-    2) download_iso "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso" "virtio-win.iso" ;;
-    3) download_iso "https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66750/19045.2006.220908-0225.22h2_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso" "windows10.iso" ;;
-    4) download_iso "https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66749/17763.3650.221105-1748.rs5_release_svc_refresh_SERVER_EVAL_x64FRE_en-us.iso" "windows_server_2019.iso" ;;
-    5) download_iso "https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-live-server-amd64.iso" "ubuntu-22.iso" ;;
-    6) log "Returning to main menu..." ;;
-    *) log "Invalid option. Please select a valid choice." ;;
-  esac
-}
-
 download_snare_files() {
   local download_dir=~/ad-training-lab/ansible/playbooks/Snare-Products
   mkdir -p $download_dir
 
-  # Function to download the first file
   download_file_1() {
-    curl -L -o $download_dir/Snare-Windows-Agent-v5.8.1-x64.exe "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/Snare-Windows-Agent-v5.8.1-x64.exe"
+    [ ! -f $download_dir/Snare-Windows-Agent-v5.8.1-x64.exe ] && curl -L -o $download_dir/Snare-Windows-Agent-v5.8.1-x64.exe "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/Snare-Windows-Agent-v5.8.1-x64.exe"
   }
 
-  # Function to download the second file
   download_file_2() {
-    curl -L -o $download_dir/Snare-Windows-Agent-\(Desktop-Only\)-v5.8.1-x64.exe "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/Snare-Windows-Agent-.Desktop-Only.-v5.8.1-x64.exe"
+    [ ! -f $download_dir/Snare-Windows-Agent-\(Desktop-Only\)-v5.8.1-x64.exe ] && curl -L -o $download_dir/Snare-Windows-Agent-\(Desktop-Only\)-v5.8.1-x64.exe "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/Snare-Windows-Agent-.Desktop-Only.-v5.8.1-x64.exe"
   }
 
-  # Function to download the third file
   download_file_3() {
-    curl -L -o $download_dir/Snare-Windows-Agent-WEC-v5.8.1-x64.exe "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/Snare-Windows-Agent-WEC-v5.8.1-x64.exe"
+    [ ! -f $download_dir/Snare-Windows-Agent-WEC-v5.8.1-x64.exe ] && curl -L -o $download_dir/Snare-Windows-Agent-WEC-v5.8.1-x64.exe "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/Snare-Windows-Agent-WEC-v5.8.1-x64.exe"
   }
 
-  # Function to download the fourth file
   download_file_4() {
-    curl -L -o $download_dir/Snare-Epilog-Agent-v5.8.1-x64.exe "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/Snare-Epilog-Agent-v5.8.1-x64.exe"
+    [ ! -f $download_dir/Snare-Epilog-Agent-v5.8.1-x64.exe ] && curl -L -o $download_dir/Snare-Epilog-Agent-v5.8.1-x64.exe "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/Snare-Epilog-Agent-v5.8.1-x64.exe"
   }
 
-  # Function to download the fifth file
   download_file_5() {
-    curl -L -o $download_dir/Snare-MSSQL-Agent-v5.8.1-x64.exe "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/Snare-MSSQL-Agent-v5.8.1-x64.exe"
+    [ ! -f $download_dir/Snare-MSSQL-Agent-v5.8.1-x64.exe ] && curl -L -o $download_dir/Snare-MSSQL-Agent-v5.8.1-x64.exe "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/Snare-MSSQL-Agent-v5.8.1-x64.exe"
   }
 
-  # Function to download the sixth file
   download_file_6() {
-    curl -L -o $download_dir/MSIBuilder.exe "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/MSIBuilder.exe"
+    [ ! -f $download_dir/MSIBuilder.exe ] && curl -L -o $download_dir/MSIBuilder.exe "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/MSIBuilder.exe"
   }
 
-  # Function to download the seventh file
   download_file_7() {
-    curl -L -o $download_dir/Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb"
+    [ ! -f $download_dir/Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb ] && curl -L -o $download_dir/Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb"
   }
 
-  # Function to download the eighth file
   download_file_8() {
-    curl -L -o $download_dir/SnareAM-v2.0.1-x64.msi "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/SnareAM-v2.0.1-x64.msi"
+    [ ! -f $download_dir/SnareAM-v2.0.1-x64.msi ] && curl -L -o $download_dir/SnareAM-v2.0.1-x64.msi "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/SnareAM-v2.0.1-x64.msi"
   }
 
-  # Function to download the eighth file
   download_file_9() {
-    curl -L -o $download_dir/SnareReflector-Windows-x64-v2.5.1.msi "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/SnareReflector-Windows-x64-v2.5.1.msi"
+    [ ! -f $download_dir/SnareReflector-Windows-x64-v2.5.1.msi ] && curl -L -o $download_dir/SnareReflector-Windows-x64-v2.5.1.msi "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/SnareReflector-Windows-x64-v2.5.1.msi"
   }
 
-  # Prompt user for which files to download
-  echo "Which files would you like to download?"
-  echo "1) Snare-Windows-Agent-v5.8.1-x64.exe"
-  echo "2) Snare-Windows-Agent-\(Desktop-Only\)-v5.8.1-x64.exe"
-  echo "3) Snare-Windows-Agent-WEC-v5.8.1-x64.exe"
-  echo "4) Snare-Epilog-Agent-v5.8.1-x64.exe"
-  echo "5) Snare-MSSQL-Agent-v5.8.1-x64.exe"
-  echo "6) MSIBuilder.exe"
-  echo "7) Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb"
-  echo "8) SnareAM-v2.0.1-x64.msi"
-  echo "9) SnareReflector-Windows-x64-v2.5.1.msi"
-  echo "10) All files"
-  read -p "Enter your choice (1/2/3/4/5/6/7/8/9/10): " choice
-
-  # Download the selected files
-  case $choice in
-    1)
-      echo "Downloading Snare-Windows-Agent-v5.8.1-x64.exe..."
-      download_file_1
-      ;;
-    2)
-      echo "Downloading Snare-Windows-Agent-(Desktop-Only)-v5.8.1-x64.exe..."
-      download_file_2
-      ;;
-    3)
-      echo "Downloading Snare-Windows-Agent-WEC-v5.8.1-x64.exe..."
-      download_file_3
-      ;;
-    4)
-      echo "Downloading Snare-Epilog-Agent-v5.8.1-x64.exe..."
-      download_file_4
-      ;;
-    5)
-      echo "Downloading Snare-MSSQL-Agent-v5.8.1-x64.exe..."
-      download_file_5
-      ;;
-    6)
-      echo "Downloading MSIBuilder.exe..."
-      download_file_6
-      ;;
-    7)
-      echo "Downloading Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb..."
-      download_file_7
-      ;;
-    8)
-      echo "Downloading SnareAM-v2.0.1-x64.msi..."
-      download_file_8
-      ;;
-    9)
-      echo "Downloading SnareReflector-Windows-x64-v2.5.1.msi..."
-      download_file_9
-      ;;
-    10)
-      echo "Downloading all files..."
-      download_file_1
-      download_file_2
-      download_file_3
-      download_file_4
-      download_file_5
-      download_file_6
-      download_file_7
-      download_file_8
-      download_file_9
-      ;;
-    *)
-      echo "Invalid choice. Please run the script again and select a valid option."
-      ;;
-  esac
+  download_file_1
+  download_file_2
+  download_file_3
+  download_file_4
+  download_file_5
+  download_file_6
+  download_file_7
+  download_file_8
+  download_file_9
 
   echo "Download(s) completed."
 }
@@ -295,6 +207,15 @@ install_ansible_collections() {
   pip3 install ansible pywinrm jmespath || error_exit "Failed to install Python packages."
   ansible-galaxy collection install community.windows community.general microsoft.ad || error_exit "Failed to install Ansible collections."
   log "Ansible collections and required Python packages installed successfully."
+}
+
+run_all_steps_4_to_9() {
+  replace_placeholders
+  install_ansible
+  install_packer_terraform
+  download_all_iso_files_proxmox
+  download_snare_files
+  install_ansible_collections
 }
 
 main_menu() {
@@ -308,8 +229,9 @@ main_menu() {
   echo "7) Download ISO Files to Proxmox"
   echo "8) Download Snare Files"
   echo "9) Install Ansible Collections and Python Packages"
-  echo "10) Exit"
-  read -p "Enter choice [1-10]: " main_choice
+  echo "10) Run Steps 4-9 Sequentially"
+  echo "11) Exit"
+  read -p "Enter choice [1-11]: " main_choice
   case $main_choice in
     1) update_system_and_install_dependencies ;;
     2) create_venv ;;
@@ -317,10 +239,11 @@ main_menu() {
     4) replace_placeholders ;;
     5) install_ansible ;;
     6) install_packer_terraform ;;
-    7) download_iso_files_proxmox_menu ;;
+    7) download_all_iso_files_proxmox ;;
     8) download_snare_files ;;
     9) install_ansible_collections ;;
-    10) log "Exiting script. Goodbye!" ; exit 0 ;;
+    10) run_all_steps_4_to_9 ;;
+    11) log "Exiting script. Goodbye!" ; exit 0 ;;
     *) log "Invalid option. Please select a valid choice." ;;
   esac
 }
