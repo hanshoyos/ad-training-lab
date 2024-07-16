@@ -268,7 +268,7 @@ download_snare_files() {
       ;;
     9)
       echo "Downloading SnareReflector-Windows-x64-v2.5.1.msi..."
-      download_file_8
+      download_file_9
       ;;
     10)
       echo "Downloading all files..."
