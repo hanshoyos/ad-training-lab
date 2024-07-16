@@ -25,28 +25,10 @@
         state: domain
         reboot: true
 
-    - name: Allow RDP to specific users
-      ansible.windows.win_user_right:
-        name: SeRemoteInteractiveLogonRight
-        users:
-        - Administrators
-        - Remote Desktop Users
-        - Domain Admins
-
     - name: Map shared folder
       community.windows.win_mapped_drive:
         letter: 'Z'
         path: \\fs.{{ domain_name }}\SharedFolder
-        state: present
-        
-    - name: Add user to rdp group
-      win_group_membership:
-        name: Remote Desktop Users
-        members:
-          - '{{ snare_admin_login }}'
-          - '{{ fs_admin_login }}'
-          - '{{ web_admin_login }}'
-          - '{{ ws_admin_login }}'
         state: present
 
      - name: Set autologon for specific user
