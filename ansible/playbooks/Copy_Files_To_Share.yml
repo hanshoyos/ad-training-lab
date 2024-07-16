@@ -1,5 +1,5 @@
 ---
-- name: CONFIGURING FILESERVER
+- name: Copy Files to File Server
   hosts: FS
   gather_facts: no
   tasks:
