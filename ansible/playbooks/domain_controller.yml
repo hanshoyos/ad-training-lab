@@ -56,7 +56,7 @@
         name: '{{ snare_user }}'
         firstname: Snare
         surname: Admin
-        password: '{{ snare_password }}'
+        password: '{{ snare_admin_password }}'
         state: present
         domain_username: Administrator
         domain_password: '{{ domain_admin_password }}'
@@ -68,10 +68,10 @@
 
     - name: Add workstation account (ws account)
       microsoft.ad.user:
-        name: '{{ first_user }}'
+        name: '{{ ws_admin }}'
         firstname: Workstation
         surname: Administrator
-        password: '{{ first_user_password }}'
+        password: '{{ ws_admin_password }}'
         state: present
         domain_username: Administrator
         domain_password: '{{ domain_admin_password }}'
@@ -96,10 +96,10 @@
 
     - name: Add fsadmin account (fs admin account)
       microsoft.ad.user:
-        name: '{{ server_admin }}'
+        name: '{{ fs_admin }}'
         firstname: FileSystem
         surname: Administrator
-        password: '{{ server_admin_password }}'
+        password: '{{ fs_admin_password }}'
         state: present
         domain_username: Administrator
         domain_password: '{{ domain_admin_password }}'
