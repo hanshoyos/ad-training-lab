@@ -1,0 +1,27 @@
+- name: Install Snare Agent on Windows Machines
+  hosts: DC
+  gather_facts: no
+  tasks:
+    - name: Copy Snare Agent MSI to Windows machine
+      ansible.builtin.win_copy:
+        src: ../playbooks/Snare-Products/SnareAM-v2.0.1-x64.msi
+        dest: C:\Temp\SnareAM-v2.0.1-x64.msi
+
+    - name: Install Snare Agent using MSI
+      ansible.builtin.win_command: 'msiexec /i C:\Temp\SnareAM-v2.0.1-x64.msi /quiet /norestart /L*V C:\Temp\Snare-Install.log'
+
+    - name: Ensure Snare Agent is running
+      ansible.builtin.win_service:
+        name: Snare
+        start_mode: auto
+        state: started
+
+    - name: Clean up Snare Agent MSI
+      ansible.builtin.win_file:
+        path: C:\Temp\SnareAM-v2.0.1-x64.msi
+        state: absent
+
+    - name: Clean up Snare install log
+      ansible.builtin.win_file:
+        path: C:\Temp\Snare-Install.log
+        state: absent
