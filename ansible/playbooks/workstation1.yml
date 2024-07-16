@@ -42,7 +42,7 @@
       win_group_membership:
         name: Remote Desktop Users
         members:
-          - '{{ first_user_login }}'
+          - '{{ fs_admin_login }}'
         state: present
 
      - name: Set autologon for specific user
