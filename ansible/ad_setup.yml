@@ -1,14 +1,13 @@
 ---
 # win
 - import_playbook: playbooks/win_basic.yml
-- import_playbook: playbooks/domain_controller.yml
-- import_playbook: playbooks/adcs.yml
-- import_playbook: playbooks/fileserver.yml
+- import_playbook: playbooks/configure_domain_controller_server.yml
+- import_playbook: playbooks/configure_file_server.yml
+- import_playbook: playbooks/map_share_to_dc.yml
+- import_playbook: playbooks/configure_adcs_server.yml
 - import_playbook: playbooks/install_WIX.yml
-- import_playbook: playbooks/webserver.yml
-- import_playbook: playbooks/workstation1.yml
-- import_playbook: playbooks/workstation2.yml
-- import_playbook: playbooks/mssqlserver.yml
-
-
-
+- import_playbook: playbooks/configure_web_server.yml
+- import_playbook: playbooks/configure_mssql_server.yml
+- import_playbook: playbooks/configure_workstation_1.yml
+- import_playbook: playbooks/configure_workstation_2.yml
+- import_playbook: playbooks/install_sysmon.yml
