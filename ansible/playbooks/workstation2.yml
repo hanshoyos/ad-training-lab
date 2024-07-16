@@ -1,5 +1,5 @@
-- name: CONFIGURING WORKSTATION 1
-  hosts: WS1
+- name: CONFIGURING WORKSTATION 2
+  hosts: WS2
   gather_facts: no
   tasks:
     - name: Rename server
