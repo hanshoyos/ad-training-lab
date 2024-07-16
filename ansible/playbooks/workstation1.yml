@@ -31,6 +31,7 @@
         users:
         - Administrators
         - Remote Desktop Users
+        - Domain Admins
 
     - name: Map shared folder
       community.windows.win_mapped_drive:
