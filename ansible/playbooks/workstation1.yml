@@ -45,11 +45,10 @@
           - '{{ snare_admin_login }}'
           - '{{ fs_admin_login }}'
           - '{{ web_admin_login }}'
-          - '{{ fs_admin_login }}'
-
+          - '{{ ws_admin_login }}'
         state: present
 
      - name: Set autologon for specific user
       community.windows.win_auto_logon:
-        username: '{{ domain_admin_login }}'
-        password: '{{ domain_admin_password }}'
+        username: '{{ snare_admin_login }}'
+        password: '{{ snare_admin_login }}'
