@@ -79,6 +79,7 @@
           set:
           - Domain Users
           - Remote Desktop Users
+          - Domain Admins
 
     - name: Add webadmin account (web admin account)
       microsoft.ad.user:
@@ -93,6 +94,7 @@
           set:
           - Domain Users
           - Remote Desktop Users
+          - Domain Admins
 
     - name: Add fsadmin account (fs admin account)
       microsoft.ad.user:
@@ -107,17 +109,10 @@
           set:
           - Domain Users
           - Remote Desktop Users
+          - Domain Admins
 
     - name: Set autologon for specific user
       community.windows.win_auto_logon:
         username: '{{ snare_admin_login }}'
         password: '{{ snare_admin_password }}'
-
-    - name: Add current user to Domain Admins group
-      microsoft.ad.user:
-        name: "provision"
-        groups:
-          add:
-          - Domain Admins
-      state: present
 
