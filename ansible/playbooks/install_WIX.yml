@@ -7,25 +7,63 @@
       ansible.builtin.win_file:
         path: C:\Temp
         state: directory
+      register: ensure_temp_dir
+
+    - name: Debug ensure C:\Temp directory exists
+      debug:
+        msg: "Ensure C:\\Temp directory exists result: {{ ensure_temp_dir }}"
 
     - name: Download WiX Toolset binaries
       ansible.builtin.win_get_url:
         url: https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314-binaries.zip
         dest: C:\Temp\wix314-binaries.zip
+      register: download_wix_binaries
+
+    - name: Debug download WiX Toolset binaries
+      debug:
+        msg: "Download WiX Toolset binaries result: {{ download_wix_binaries }}"
 
     - name: Ensure C:\Program Files\wix directory exists
       ansible.builtin.win_file:
         path: C:\Program Files\wix
         state: directory
+      register: ensure_wix_dir
+
+    - name: Debug ensure C:\Program Files\wix directory exists
+      debug:
+        msg: "Ensure C:\\Program Files\\wix directory exists result: {{ ensure_wix_dir }}"
 
     - name: Unzip WiX Toolset binaries
       ansible.builtin.win_unzip:
         src: C:\Temp\wix314-binaries.zip
         dest: C:\Program Files\wix
         creates: C:\Program Files\wix\bin
+      register: unzip_wix_binaries
+
+    - name: Debug unzip WiX Toolset binaries
+      debug:
+        msg: "Unzip WiX Toolset binaries result: {{ unzip_wix_binaries }}"
 
     - name: Append WiX to the system PATH
       ansible.builtin.win_shell: |
         $old_path = [System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::Machine)
         $new_path = "$old_path;C:\Program Files\wix"
         [System.Environment]::SetEnvironmentVariable('Path', $new_path, [System.EnvironmentVariableTarget]::Machine)
+      register: append_wix_path
+
+    - name: Debug append WiX to the system PATH
+      debug:
+        msg: "Append WiX to the system PATH result: {{ append_wix_path }}"
+
+    - name: Debug final reboot initiation
+      debug:
+        msg: "Rebooting the server to apply all configurations"
+
+    - name: Force reboot the server after all tasks are done
+      win_reboot:
+      register: final_reboot_status
+
+    - name: Wait for server to come back online after final reboot
+      wait_for_connection:
+        timeout: 600
+      when: final_reboot_status.changed
