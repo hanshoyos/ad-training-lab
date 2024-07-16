@@ -7,17 +7,17 @@
       win_hostname:
         name: "{{ inventory_hostname }}"
       register: rename
-
+      
     - name: Reboot after rename
       win_reboot:
       when: rename.reboot_required
-
+      
     - name: Set DNS to Domain Controller
       win_dns_client:
         adapter_names: '*'
         dns_servers:
         - "{{ hostvars['DC']['ansible_host'] }}"
-
+      
     - name: Join Domain
       microsoft.ad.membership:
         dns_domain_name: "{{ domain_name }}"
@@ -26,16 +26,16 @@
         state: domain
         reboot: true
 
-    - name: Set autologon for specific user
-      community.windows.win_auto_logon:
-        username: '{{ domain_admin_login }}'
-        password: '{{ domain_admin_password }}'
+    - name: Map shared folder
+      community.windows.win_mapped_drive:
+        letter: 'Z'
+        path: \\fs.{{ domain_name }}\SharedFolder
+        state: present
 
-    - name: Allow RDP to specific users
-      ansible.windows.win_user_right:
-        name: SeRemoteInteractiveLogonRight
-        users:
-        - Administrators
+     - name: Set autologon for specific user
+      community.windows.win_auto_logon:
+        username: '{{ snare_admin_login }}'
+        password: '{{ snare_admin_login }}'
 
     - name: Ensure C:\Temp directory exists
       win_file:
