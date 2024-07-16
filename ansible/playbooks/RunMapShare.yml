@@ -1,3 +1,7 @@
+- name: CONFIGURING WORKSTATION 1
+  hosts: WS1
+  gather_facts: no
+  tasks:
   - name: Map shared folder
       community.windows.win_mapped_drive:
         letter: 'Z'
