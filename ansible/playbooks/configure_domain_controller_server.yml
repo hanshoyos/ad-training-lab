@@ -1,6 +1,6 @@
 ---
-- name: CONFIGURING FILESERVER
-  hosts: FS
+- name: CONFIGURING DOMAIN CONTROLLER
+  hosts: DC
   gather_facts: no
   tasks:
     - name: Rename server
@@ -12,30 +12,157 @@
       debug:
         msg: "Server rename result: {{ rename }}"
 
-    - name: Debug DNS server
-      debug:
-        msg: "DNS server will be set to {{ hostvars['DC']['ansible_host'] }}"
+    - name: Reboot after rename if required
+      win_reboot:
+      when: rename.reboot_required
+      register: rename_reboot_status
 
-    - name: Set DNS to Domain Controller
+    - name: Wait for server to come back online after rename reboot
+      wait_for_connection:
+        timeout: 600
+      when: rename_reboot_status.changed
+
+    - name: Debug AD and DNS install initiation
+      debug:
+        msg: "Starting installation of Active Directory and DNS Server Role"
+
+    - name: Installing Active Directory and DNS Server Role
+      win_feature:
+        name:
+          - AD-Domain-Services
+          - DNS
+        include_management_tools: yes
+        include_sub_features: yes
+        state: present
+      register: result
+
+    - name: Debug AD and DNS install result
+      debug:
+        msg: "Active Directory and DNS Server Role installation result: {{ result }}"
+
+    - name: Change Administrator password
+      win_user:
+        name: Administrator
+        password: "{{ domain_admin_password }}"
+
+    - name: Debug domain creation initiation
+      debug:
+        msg: "Creating domain {{ domain_name }} with NetBIOS name {{ domain_short }}"
+
+    - name: Create domain
+      microsoft.ad.domain:
+        dns_domain_name: "{{ domain_name }}"
+        domain_netbios_name: "{{ domain_short }}"
+        safe_mode_password: "{{ safe_mode_pass }}"
+        reboot: true
+      register: domain_result
+
+    - name: Debug domain creation result
+      debug:
+        msg: "Domain creation result: {{ domain_result }}"
+
+    - name: Set internal DNS server
       win_dns_client:
         adapter_names: '*'
-        dns_servers:
-        - "{{ hostvars['DC']['ansible_host'] }}"
+        ipv4_addresses:
+        - '127.0.0.1'
 
-    - name: Debug domain join parameters
+    - name: Debug DNS forwarders configuration
       debug:
-        msg: "Joining domain {{ domain_name }} with user Administrator@{{ domain_name }}"
+        msg: "Configuring DNS forwarders to {{ dns_forwarders }}"
 
-    - name: Join Domain
-      microsoft.ad.membership:
-        dns_domain_name: "{{ domain_name }}"
-        domain_admin_user: "Administrator@{{ domain_name }}"
-        domain_admin_password: "{{ domain_admin_password }}"
-        state: domain
-        reboot: true
-      register: join_domain_status
+    - name: Configure DNS forwarders
+      ansible.windows.win_powershell:
+        script: |
+          Set-DNSServerForwarder -IPAddress {{ dns_forwarders }}
 
-    - name: Debug autologon parameters
+    - name: Debug RDP user allowance
+      debug:
+        msg: "Allowing RDP access to Administrators"
+
+    - name: Allow RDP to specific users
+      ansible.windows.win_user_right:
+        name: SeRemoteInteractiveLogonRight
+        users:
+        - Administrators
+
+    - name: Debug Snare Domain Admin account creation
+      debug:
+        msg: "Creating Snare Domain Admin account with username {{ snare_admin }}"
+
+    - name: Add Snare Domain Admin Account (Snare account)
+      microsoft.ad.user:
+        name: '{{ snare_admin }}'
+        firstname: Snare
+        surname: Admin
+        password: '{{ snare_admin_password }}'
+        state: present
+        domain_username: Administrator
+        domain_password: '{{ domain_admin_password }}'
+        groups:
+          set:
+          - Domain Users
+          - Remote Desktop Users
+          - Domain Admins
+
+    - name: Debug workstation admin account creation
+      debug:
+        msg: "Creating workstation admin account with username {{ ws_admin }}"
+
+    - name: Add workstation account (ws account)
+      microsoft.ad.user:
+        name: '{{ ws_admin }}'
+        firstname: Workstation
+        surname: Administrator
+        password: '{{ ws_admin_password }}'
+        state: present
+        domain_username: Administrator
+        domain_password: '{{ domain_admin_password }}'
+        groups:
+          set:
+          - Domain Users
+          - Remote Desktop Users
+          - Domain Admins
+
+    - name: Debug web admin account creation
+      debug:
+        msg: "Creating web admin account with username {{ web_admin }}"
+
+    - name: Add webadmin account (web admin account)
+      microsoft.ad.user:
+        name: '{{ web_admin }}'
+        firstname: WebServer
+        surname: Administrator
+        password: '{{ web_admin_password }}'
+        state: present
+        domain_username: Administrator
+        domain_password: '{{ domain_admin_password }}'
+        groups:
+          set:
+          - Domain Users
+          - Remote Desktop Users
+          - Domain Admins
+
+    - name: Debug fs admin account creation
+      debug:
+        msg: "Creating fs admin account with username {{ fs_admin }}"
+
+    - name: Add fsadmin account (fs admin account)
+      microsoft.ad.user:
+        name: '{{ fs_admin }}'
+        firstname: FileSystem
+        surname: Administrator
+        password: '{{ fs_admin_password }}'
+        state: present
+        domain_username: Administrator
+        domain_password: '{{ domain_admin_password }}'
+        groups:
+          set:
+          - Domain Users
+          - Remote Desktop Users
+          - Domain Admins
+
+    - name: Debug autologon setting
       debug:
         msg: "Setting autologon for user {{ snare_admin_login }}"
 
@@ -43,48 +170,6 @@
       community.windows.win_auto_logon:
         username: '{{ snare_admin_login }}'
         password: '{{ snare_admin_password }}'
-
-    - name: Installing FS-FileServer feature
-      win_feature:
-        name:
-          - FS-FileServer
-        include_sub_features: yes
-        state: present
-
-    - name: Creating SharedFolder directory
-      win_file:
-        path: C:\SharedFolder
-        state: directory
-
-    - name: Copy directory to shared folder
-      win_copy:
-        src: ../playbooks/Snare-Products
-        dest: C:/SharedFolder
-        recurse: yes
-
-    - name: Debug shared folder parameters
-      debug:
-        msg: "Creating shared folder with full access for {{ domain_short }}\\Domain Admins, change access for {{ domain_short }}\\Domain Users, and read access for Everyone"
-
-    - name: Creating FileServer shared folder
-      win_share:
-        name: SharedFolder
-        description: All-in shared folder
-        path: C:\SharedFolder
-        list: yes
-        full: '{{ domain_short }}\Domain Admins'
-        change: '{{ domain_short }}\Domain Users'
-        read: Everyone
-
-    - name: Debug mapped drive parameters
-      debug:
-        msg: "Mapping shared folder to Z: drive with path \\\\fs.{{ domain_name }}\\SharedFolder"
-
-    - name: Map shared folder
-      community.windows.win_mapped_drive:
-        letter: 'Z'
-        path: \\fs.{{ domain_name }}\SharedFolder
-        state: present
 
     - name: Debug final reboot initiation
       debug:
