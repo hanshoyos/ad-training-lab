@@ -1,15 +1,22 @@
 - name: Update SAM1IP in Fullyconfigured.inf
   hosts: localhost
   gather_facts: no
-  vars_files:
-    - hosts.yml
   tasks:
+    - name: Read hosts.yml
+      slurp:
+        src: ~/ad-training-lab/ansible/inventory/hosts.yml
+      register: hosts_file
+
+    - name: Parse hosts.yml
+      set_fact:
+        hosts_content: "{{ hosts_file.content | b64decode | from_yaml }}"
+
     - name: Set the SAM1IP value from hosts.yml for DC host
       set_fact:
-        sam1ip: "{{ hostvars['localhost']['windows']['hosts']['DC']['ansible_host'] }}"
+        sam1ip: "{{ hosts_content.windows.hosts.DC.ansible_host }}"
 
     - name: Replace SAM1IP in Fullyconfigured.inf
-      shell: "sed -i 's/^SAM1IP=\"[^\"]*\"/SAM1IP=\"{{ sam1ip }}\"/' Fullyconfigured.inf"
+      shell: "sed -i 's/^SAM1IP=\"[^\"]*\"/SAM1IP=\"{{ sam1ip }}\"/' ~/ad-training-lab/ansible/playbooks/Snare-Products/Fullyconfigured.inf"
       args:
         executable: /bin/bash
       delegate_to: localhost
