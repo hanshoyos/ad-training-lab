@@ -31,6 +31,11 @@
         letter: 'Z'
         path: \\fs.{{ domain_name }}\SharedFolder
         state: present
+
+    - name: Set autologon for specific user
+      community.windows.win_auto_logon:
+        username: '{{ snare_admin_login }}'
+        password: '{{ snare_admin_login }}'
   
     - name: Install ADCS
       win_feature:
@@ -90,8 +95,3 @@
 
     - name: Refresh group policy
       win_command: gpupdate /force
-
-    - name: Set autologon for specific user
-      community.windows.win_auto_logon:
-        username: '{{ snare_admin_login }}'
-        password: '{{ snare_admin_password }}'
