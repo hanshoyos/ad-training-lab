@@ -6,7 +6,7 @@ domain_name: '{{ domain_short|lower }}lab.local'
 
 domain_admin_login: '{{ domain_short }}\Administrator'
 domain_admin_ssh: '{{ domain_short }}\\Administrator'
-domain_admin_password: P@ssw0rd
+domain_admin_password: DomainAdminPassword.
 safe_mode_pass: SafeModePassword.
 
 ca_name: '{{ domain_short }}-CA'
@@ -19,16 +19,16 @@ ws_admin: 'wsadmin'
 
 snare_admin_login: '{{ domain_short }}\{{ snare_admin }}'
 snare_admin_ssh: '{{ domain_short }}\{{ snare_admin }}'
-snare_admin_password: P@ssw0rd
+snare_admin_password: SnareAdminPassword.
 
 fs_admin_login: '{{ domain_short }}\{{ fs_admin }}'
 fs_admin_ssh: '{{ domain_short }}\{{ fs_admin }}'
-fs_admin_password: 'snaretest'
+fs_admin_password: FSAdminPassword.
 
 web_admin_login: '{{ domain_short}}\{{ web_admin }}'
 web_admin_ssh: '{{ domain_short}}{{ web_admin }}'
-web_admin_password: 'snaretest'
+web_admin_password: WebAdminPassword.
 
 ws_admin_login: '{{ domain_short }}\{{ ws_admin }}'
 ws_admin_ssh: '{{ domain_short }}\\{{ ws_admin }}'
-ws_admin_password: 'snaretest'
+ws_admin_password: WSAdminPassword.
