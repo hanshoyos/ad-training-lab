@@ -1,3 +1,4 @@
+---
 - name: Update SAM1IP in Fullyconfigured.inf
   hosts: localhost
   gather_facts: no
@@ -7,16 +8,33 @@
         src: ~/ad-training-lab/ansible/inventory/hosts.yml
       register: hosts_file
 
+    - name: Debug read hosts.yml result
+      debug:
+        msg: "Read hosts.yml result: {{ hosts_file }}"
+
     - name: Parse hosts.yml
       set_fact:
         hosts_content: "{{ hosts_file.content | b64decode | from_yaml }}"
 
+    - name: Debug parsed hosts.yml content
+      debug:
+        msg: "Parsed hosts.yml content: {{ hosts_content }}"
+
     - name: Set the SAM1IP value from hosts.yml for DC host
       set_fact:
         sam1ip: "{{ hosts_content.windows.hosts.DC.ansible_host }}"
+
+    - name: Debug SAM1IP value
+      debug:
+        msg: "SAM1IP value set to: {{ sam1ip }}"
 
     - name: Replace SAM1IP in Fullyconfigured.inf
       shell: "sed -i 's/^SAM1IP=\"[^\"]*\"/SAM1IP=\"{{ sam1ip }}\"/' ~/ad-training-lab/ansible/playbooks/Snare-Products/Fullyconfigured.inf"
       args:
         executable: /bin/bash
       delegate_to: localhost
+      register: replace_sam1ip
+
+    - name: Debug replace SAM1IP result
+      debug:
+        msg: "Replace SAM1IP in Fullyconfigured.inf result: {{ replace_sam1ip }}"
