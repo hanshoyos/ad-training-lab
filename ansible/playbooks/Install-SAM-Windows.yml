@@ -1,3 +1,4 @@
+---
 - name: Install Snare Agent on Windows Machines
   hosts: DC
   gather_facts: no
@@ -6,27 +7,70 @@
       ansible.builtin.win_file:
         path: C:\Temp
         state: directory
-        
+      register: ensure_temp_dir
+
+    - name: Debug ensure C:\Temp directory exists
+      debug:
+        msg: "Ensure C:\\Temp directory exists result: {{ ensure_temp_dir }}"
+
     - name: Copy Snare Agent MSI to Windows machine
       ansible.builtin.win_copy:
         src: ../playbooks/Snare-Products/SnareAM-v2.0.1-x64.msi
         dest: C:\Temp\SnareAM-v2.0.1-x64.msi
+      register: copy_snare_msi
+
+    - name: Debug copy Snare Agent MSI result
+      debug:
+        msg: "Copy Snare Agent MSI to Windows machine result: {{ copy_snare_msi }}"
 
     - name: Install Snare Agent using MSI
       ansible.builtin.win_command: 'msiexec /i C:\Temp\SnareAM-v2.0.1-x64.msi /quiet /norestart /L*V C:\Temp\Snare-Install.log'
+      register: install_snare
+
+    - name: Debug install Snare Agent result
+      debug:
+        msg: "Install Snare Agent result: {{ install_snare }}"
 
     - name: Ensure Snare Agent is running
       ansible.builtin.win_service:
         name: Snare
         start_mode: auto
         state: started
+      register: ensure_snare_running
+
+    - name: Debug ensure Snare Agent is running result
+      debug:
+        msg: "Ensure Snare Agent is running result: {{ ensure_snare_running }}"
 
     - name: Clean up Snare Agent MSI
       ansible.builtin.win_file:
         path: C:\Temp\SnareAM-v2.0.1-x64.msi
         state: absent
+      register: cleanup_snare_msi
+
+    - name: Debug clean up Snare Agent MSI result
+      debug:
+        msg: "Clean up Snare Agent MSI result: {{ cleanup_snare_msi }}"
 
     - name: Clean up Snare install log
       ansible.builtin.win_file:
         path: C:\Temp\Snare-Install.log
         state: absent
+      register: cleanup_snare_log
+
+    - name: Debug clean up Snare install log result
+      debug:
+        msg: "Clean up Snare install log result: {{ cleanup_snare_log }}"
+
+    - name: Debug final reboot initiation
+      debug:
+        msg: "Rebooting the server to apply all configurations"
+
+    - name: Force reboot the server after all tasks are done
+      win_reboot:
+      register: final_reboot_status
+
+    - name: Wait for server to come back online after final reboot
+      wait_for_connection:
+        timeout: 600
+      when: final_reboot_status.changed
