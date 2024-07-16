@@ -7,10 +7,24 @@
       win_hostname:
         name: "{{ inventory_hostname }}"
       register: rename
-      
-    - name: Reboot after rename
+
+    - name: Debug rename output
+      debug:
+        msg: "Server rename result: {{ rename }}"
+
+    - name: Reboot after rename if required
       win_reboot:
       when: rename.reboot_required
+      register: rename_reboot_status
+
+    - name: Wait for server to come back online after rename reboot
+      wait_for_connection:
+        timeout: 600
+      when: rename_reboot_status.changed
+
+    - name: Debug DNS server
+      debug:
+        msg: "DNS server will be set to {{ hostvars['DC']['ansible_host'] }}"
 
     - name: Set DNS to Domain Controller
       win_dns_client:
@@ -18,13 +32,32 @@
         dns_servers:
         - "{{ hostvars['DC']['ansible_host'] }}"
 
+    - name: Debug domain join parameters
+      debug:
+        msg: "Joining domain {{ domain_name }} with user Administrator@{{ domain_name }}"
+
     - name: Join Domain
       microsoft.ad.membership:
         dns_domain_name: "{{ domain_name }}"
-        domain_admin_user: Administrator@{{ domain_name }}
+        domain_admin_user: "Administrator@{{ domain_name }}"
         domain_admin_password: "{{ domain_admin_password }}"
         state: domain
         reboot: true
+      register: join_domain_status
+
+    - name: Reboot after domain join if required
+      win_reboot:
+      when: join_domain_status.changed
+      register: domain_reboot_status
+
+    - name: Wait for server to come back online after domain join reboot
+      wait_for_connection:
+        timeout: 600
+      when: domain_reboot_status.changed
+
+    - name: Debug mapped drive parameters
+      debug:
+        msg: "Mapping shared folder to Z: drive with path \\\\fs.{{ domain_name }}\\SharedFolder"
 
     - name: Map shared folder
       community.windows.win_mapped_drive:
@@ -32,10 +65,18 @@
         path: \\fs.{{ domain_name }}\SharedFolder
         state: present
 
+    - name: Debug autologon parameters
+      debug:
+        msg: "Setting autologon for user {{ snare_admin_login }}"
+
     - name: Set autologon for specific user
       community.windows.win_auto_logon:
         username: '{{ snare_admin_login }}'
-        password: '{{ snare_admin_login }}'
+        password: '{{ snare_admin_password }}'
+
+    - name: Debug IIS installation
+      debug:
+        msg: "Installing IIS Web-Server"
 
     - name: Install IIS Web-Server
       win_feature:
@@ -44,7 +85,11 @@
         include_sub_features: true
         include_management_tools: true
       register: win_feature
-    
+
+    - name: Debug IIS installation result
+      debug:
+        msg: "IIS installation result: {{ win_feature }}"
+
     - name: Add webadmin to localadmin group
       win_group_membership:
         name: Administrators
@@ -52,23 +97,52 @@
           - '{{ web_admin_login }}'
         state: present
 
-    - name: Delete default iis webapp
+    - name: Debug default IIS web app deletion
+      debug:
+        msg: "Deleting default IIS web app"
+
+    - name: Delete default IIS webapp
       win_file:
         path: C:\inetpub\wwwroot
         state: absent
-    
+
+    - name: Debug custom web app import
+      debug:
+        msg: "Importing custom web app"
+
     - name: Import a custom webapp
       win_copy:
         src: wwwroot/
         dest: C:\inetpub\wwwroot
-        
+
+    - name: Debug authentication method definition
+      debug:
+        msg: "Defining authentication method for IIS"
+
     - name: Define authentication method
       win_shell: |
         Import-Module WebAdministration;
         Set-WebConfigurationProperty -filter /system.webServer/security/authentication/anonymousAuthentication -name enabled -value false -PSPath IIS:\\ -location "Default Web Site"
         Set-WebConfigurationProperty -filter /system.webServer/security/authentication/windowsAuthentication -name enabled -value true -PSPath IIS:\\ -location "Default Web Site"
 
+    - name: Debug IIS service restart
+      debug:
+        msg: "Restarting IIS service"
+
     - name: Restart IIS Service
       win_service:
         name: W3SVC
         state: restarted
+
+    - name: Debug final reboot initiation
+      debug:
+        msg: "Rebooting the server to apply all configurations"
+
+    - name: Force reboot the server after all tasks are done
+      win_reboot:
+      register: final_reboot_status
+
+    - name: Wait for server to come back online after final reboot
+      wait_for_connection:
+        timeout: 600
+      when: final_reboot_status.changed
