@@ -44,8 +44,6 @@ configure_proxmox_users() {
   log "Configuring Proxmox users and roles..."
   read -p "Enter Proxmox User IP: " PROXMOX_USER_IP
   read -p "Enter Proxmox User Username: " PROXMOX_USER
-
-  echo "Enter Proxmox User Password:"
   read -s PROXMOX_PASS
 
   log "Executing SSH commands on Proxmox server..."
