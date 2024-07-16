@@ -1,4 +1,4 @@
-ubuntu:
+linux:
   vars:
     ansible_user: ubuntu
     ansible_password: ubuntu
