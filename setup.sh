@@ -205,7 +205,7 @@ download_snare_files() {
 
   # Function to download the seventh file
   download_file_7() {
-    curl -L -o $download_dir/Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb "https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/Snare-Ubuntu-22-Agent-v5.8.1-1-x64.debQ"
+    curl -L -o $download_dir/Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb https://github.com/hanshoyos/ad-training-lab/releases/download/snare-products/Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb"
   }
 
   # Function to download the eighth file
