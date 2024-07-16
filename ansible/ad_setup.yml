@@ -11,3 +11,5 @@
 - import_playbook: playbooks/configure_workstation_1.yml
 - import_playbook: playbooks/configure_workstation_2.yml
 - import_playbook: playbooks/install_sysmon.yml
+- import_playbook: playbooks/windows_update.yml
+
