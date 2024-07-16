@@ -53,7 +53,7 @@
 
     - name: Add Snare Domain Admin Account (Snare account)
       microsoft.ad.user:
-        name: '{{ snare_user }}'
+        name: '{{ snare_admin }}'
         firstname: Snare
         surname: Admin
         password: '{{ snare_admin_password }}'
@@ -110,8 +110,8 @@
 
     - name: Set autologon for specific user
       community.windows.win_auto_logon:
-        username: '{{ domain_admin_login }}'
-        password: '{{ domain_admin_password }}'
+        username: '{{ snare_admin_login }}'
+        password: '{{ snare_admin_password }}'
 
     - name: Add current user to Domain Admins group
       microsoft.ad.user:
