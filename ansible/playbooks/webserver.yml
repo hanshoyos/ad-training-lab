@@ -26,12 +26,17 @@
         state: domain
         reboot: true
 
-    - name: Allow RDP to specific users
-      ansible.windows.win_user_right:
-        name: SeRemoteInteractiveLogonRight
-        users:
-        - Administrators
-    
+    - name: Map shared folder
+      community.windows.win_mapped_drive:
+        letter: 'Z'
+        path: \\fs.{{ domain_name }}\SharedFolder
+        state: present
+
+    - name: Set autologon for specific user
+      community.windows.win_auto_logon:
+        username: '{{ snare_admin_login }}'
+        password: '{{ snare_admin_login }}'
+
     - name: Install IIS Web-Server
       win_feature:
         name: Web-Server
@@ -63,7 +68,7 @@
         Set-WebConfigurationProperty -filter /system.webServer/security/authentication/anonymousAuthentication -name enabled -value false -PSPath IIS:\\ -location "Default Web Site"
         Set-WebConfigurationProperty -filter /system.webServer/security/authentication/windowsAuthentication -name enabled -value true -PSPath IIS:\\ -location "Default Web Site"
 
-    - name: Misconfiguration - Restart IIS Service
+    - name: Restart IIS Service
       win_service:
         name: W3SVC
         state: restarted
