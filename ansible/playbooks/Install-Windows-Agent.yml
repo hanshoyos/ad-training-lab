@@ -1,3 +1,4 @@
+---
 - name: Install Snare Agent on Windows Machines
   hosts: windows
   gather_facts: no
@@ -6,27 +7,80 @@
       ansible.builtin.win_file:
         path: C:\Temp
         state: directory
-        
+      register: ensure_temp_dir
+
+    - name: Debug ensure C:\Temp directory exists
+      debug:
+        msg: "Ensure C:\\Temp directory exists result: {{ ensure_temp_dir }}"
+
     - name: Copy Snare Agent installer to Windows machine
       ansible.builtin.win_copy:
         src: ../playbooks/Snare-Products/Snare-Windows-Agent-v5.8.1-x64.exe
         dest: C:\Temp\Snare-Windows-Agent-v5.8.1-x64.exe
+      register: copy_snare_installer
+
+    - name: Debug copy Snare Agent installer result
+      debug:
+        msg: "Copy Snare Agent installer to Windows machine result: {{ copy_snare_installer }}"
 
     - name: Copy configuration file to Windows machine
       ansible.builtin.win_copy:
         src: ../playbooks/Snare-Products/Fullyconfigured.inf
         dest: C:\Temp\Fullyconfigured.inf
+      register: copy_snare_config
+
+    - name: Debug copy configuration file result
+      debug:
+        msg: "Copy configuration file to Windows machine result: {{ copy_snare_config }}"
 
     - name: Install Snare Agent
       ansible.builtin.win_command: 'C:\Temp\Snare-Windows-Agent-v5.8.1-x64.exe /verysilent /suppressmsgboxes /Loadinf=C:\Temp\Fullyconfigured.inf'
+      register: install_snare
+
+    - name: Debug install Snare Agent result
+      debug:
+        msg: "Install Snare Agent result: {{ install_snare }}"
 
     - name: Ensure Snare Agent is running
       ansible.builtin.win_service:
         name: Snare
         start_mode: auto
         state: started
+      register: ensure_snare_running
+
+    - name: Debug ensure Snare Agent is running result
+      debug:
+        msg: "Ensure Snare Agent is running result: {{ ensure_snare_running }}"
 
     - name: Clean up Snare Agent installer
       ansible.builtin.win_file:
         path: C:\Temp\Snare-Windows-Agent-v5.8.1-x64.exe
         state: absent
+      register: cleanup_snare_installer
+
+    - name: Debug clean up Snare Agent installer result
+      debug:
+        msg: "Clean up Snare Agent installer result: {{ cleanup_snare_installer }}"
+
+    - name: Clean up Snare configuration file
+      ansible.builtin.win_file:
+        path: C:\Temp\Fullyconfigured.inf
+        state: absent
+      register: cleanup_snare_config
+
+    - name: Debug clean up Snare configuration file result
+      debug:
+        msg: "Clean up Snare configuration file result: {{ cleanup_snare_config }}"
+
+    - name: Debug final reboot initiation
+      debug:
+        msg: "Rebooting the server to apply all configurations"
+
+    - name: Force reboot the server after all tasks are done
+      win_reboot:
+      register: final_reboot_status
+
+    - name: Wait for server to come back online after final reboot
+      wait_for_connection:
+        timeout: 600
+      when: final_reboot_status.changed
