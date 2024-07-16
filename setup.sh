@@ -172,39 +172,47 @@ download_iso_files_proxmox_menu() {
 }
 
 download_snare_files() {
+  local download_dir=~/ad-training-lab/ansible/playbooks/Snare-Products
+  mkdir -p $download_dir
+
   # Function to download the first file
   download_file_1() {
-    curl -L -o Snare-Windows-Agent-v5.8.1-x64.exe "https://d2h0h41a2pqwb5.cloudfront.net/Snare-Windows-Agent-v5.8.1-x64.exe?Expires=1721103403&Signature=UvYgi4K11buGUATcGtJmz5PheCqYrIMiZXjgJfjz5MdHW79ryNO6578qobbcSxZKgqntbOypMY1csaBaKP3tW18dQDVYoQtpgSPFAYDotJfo3tLsr2NqpHsSYABuyZOVeQ-VYzY3jsS4GK4OJH8U2uTtzQMaoFYP2fqFuMn-kNONtym6zo~FxMkwqGazWZ06-4gph2rvJ2tJ5xQE1UzjXWYpaeqL1RYeofj~KRmSDoaa4IVowyKr0XlmJaPXTgTPS1fvmcSS~piAZHA8pgrObKZGyPibEwplRYLwnI4iFuqIz8geTbcyiKeU1mLyg~zUrmCL1w5LbCliFBswoZRiSg__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
+    curl -L -o $download_dir/Snare-Windows-Agent-v5.8.1-x64.exe "https://d2h0h41a2pqwb5.cloudfront.net/Snare-Windows-Agent-v5.8.1-x64.exe?Expires=1721103403&Signature=UvYgi4K11buGUATcGtJmz5PheCqYrIMiZXjgJfjz5MdHW79ryNO6578qobbcSxZKgqntbOypMY1csaBaKP3tW18dQDVYoQtpgSPFAYDotJfo3tLsr2NqpHsSYABuyZOVeQ-VYzY3jsS4GK4OJH8U2uTtzQMaoFYP2fqFuMn-kNONtym6zo~FxMkwqGazWZ06-4gph2rvJ2tJ5xQE1UzjXWYpaeqL1RYeofj~KRmSDoaa4IVowyKr0XlmJaPXTgTPS1fvmcSS~piAZHA8pgrObKZGyPibEwplRYLwnI4iFuqIz8geTbcyiKeU1mLyg~zUrmCL1w5LbCliFBswoZRiSg__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
   }
 
   # Function to download the second file
   download_file_2() {
-    curl -L -o Snare-Windows-Agent-\(Desktop-Only\)-v5.8.1-x64.exe "https://d2h0h41a2pqwb5.cloudfront.net/Snare-Windows-Agent-%28Desktop-Only%29-v5.8.1-x64.exe?Expires=1721103673&Signature=YrOFP1IqXR5kaKLyGUvmQry3mFzkkeI0izsG4wsjdDmbU68nBB7Pb5F1n~v4xmyX3MBlLSu115iSTGvEcSULXKBoY~QvQhtnMPqeiOmYBNEv2EBNwbCy6-MIlRuMAuRhTZV6Y~IVq-bjgimUITb0pBmB4OeDHMOQ2HnVF5mVDcab393PCpgv7KZe7-bUZfkfK9CQVz0a9falZC6ynY4ZrBF4eyrWyWXo44mSLLigyTtx3RTPUEpeFjlHT82WvopwtZiO7ydgBeH96LaAHuOczdgzXKHnrU3n7jr3c1-mQ9o4hqob9x4TBGI97wLvl-LrxzYcbSnXYTT7HFGQlCPVFA__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
+    curl -L -o $download_dir/Snare-Windows-Agent-\(Desktop-Only\)-v5.8.1-x64.exe "https://d2h0h41a2pqwb5.cloudfront.net/Snare-Windows-Agent-%28Desktop-Only%29-v5.8.1-x64.exe?Expires=1721103673&Signature=YrOFP1IqXR5kaKLyGUvmQry3mFzkkeI0izsG4wsjdDmbU68nBB7Pb5F1n~v4xmyX3MBlLSu115iSTGvEcSULXKBoY~QvQhtnMPqeiOmYBNEv2EBNwbCy6-MIlRuMAuRhTZV6Y~IVq-bjgimUITb0pBmB4OeDHMOQ2HnVF5mVDcab393PCpgv7KZe7-bUZfkfK9CQVz0a9falZC6ynY4ZrBF4eyrWyWXo44mSLLigyTtx3RTPUEpeFjlHT82WvopwtZiO7ydgBeH96LaAHuOczdgzXKHnrU3n7jr3c1-mQ9o4hqob9x4TBGI97wLvl-LrxzYcbSnXYTT7HFGQlCPVFA__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
   }
 
   # Function to download the third file
   download_file_3() {
-    curl -L -o Snare-Windows-Agent-WEC-v5.8.1-x64.exe "https://d2h0h41a2pqwb5.cloudfront.net/Snare-Windows-Agent-WEC-v5.8.1-x64.exe?Expires=1721103765&Signature=WTE~dcyMr1-CqLE5QyaudJGBKgQywJNwxE4ZR7pf1jtDUVH97dPT-5Y9Wfz8lVvtBVCOd2tlg93KCcKdj2IMmAgiva5Kn5BJ0bC8QMY465mErBt~grK6-gCAIQYUadz2rFUO1dnR6ZHauTActiBTM1dVN0laHL9Xxaj2LLObqnQkmivdjyu9KwS5byBc1Cn3rcye5QEOSAckAW1wXEpGHO5cJkqFFsOzFydIvtTGWf58Dj~Pgc5-X~C91lWYjmyruXB36-TfrdJLmmWYSxLtq0ltJgYGR9gBw7BT1fB7cGo3~iydr1dvYUIfOt--Y0UxVP9VS5DKXo8iYxMEbDqAcw__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
+    curl -L -o $download_dir/Snare-Windows-Agent-WEC-v5.8.1-x64.exe "https://d2h0h41a2pqwb5.cloudfront.net/Snare-Windows-Agent-WEC-v5.8.1-x64.exe?Expires=1721103765&Signature=WTE~dcyMr1-CqLE5QyaudJGBKgQywJNwxE4ZR7pf1jtDUVH97dPT-5Y9Wfz8lVvtBVCOd2tlg93KCcKdj2IMmAgiva5Kn5BJ0bC8QMY465mErBt~grK6-gCAIQYUadz2rFUO1dnR6ZHauTActiBTM1dVN0laHL9Xxaj2LLObqnQkmivdjyu9KwS5byBc1Cn3rcye5QEOSAckAW1wXEpGHO5cJkqFFsOzFydIvtTGWf58Dj~Pgc5-X~C91lWYjmyruXB36-TfrdJLmmWYSxLtq0ltJgYGR9gBw7BT1fB7cGo3~iydr1dvYUIfOt--Y0UxVP9VS5DKXo8iYxMEbDqAcw__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
   }
 
   # Function to download the fourth file
   download_file_4() {
-    curl -L -o Snare-Epilog-Agent-v5.8.1-x64.exe "https://d2h0h41a2pqwb5.cloudfront.net/Snare-Epilog-Agent-v5.8.1-x64.exe?Expires=1721103820&Signature=b0Q8dmx~xwpY7aas3dl6a1tG03ZmDw~ctb2CWBr~QpsQzD973TsyEIv5u~bNpE4FY2kWwqLtSmkjaMtc4rFhoyjAqzN8UqFaxNaHFoB7ILfCK5MZO0zhbOtK5bWhzkJhxZwqCk6U45cyjhGUR6W4a6KwZk-WPPDw39Bpe-ouwvXwM6rQkwKBSwNJuzuJ0jFySKbHRXDFozlVhtTCfqNVvD7dsekQAsAlxUOlam1N3xAFlPR5TydwDve~bcB6mYC12-NwG-lzfQ~vTyAGiDVpXKWnU1vdVxi8PsbKKdKiqhwzSplNQV4e9VDuRBdiRsLo1ANMEEQ3SsYBCsbO-~UGeA__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
+    curl -L -o $download_dir/Snare-Epilog-Agent-v5.8.1-x64.exe "https://d2h0h41a2pqwb5.cloudfront.net/Snare-Epilog-Agent-v5.8.1-x64.exe?Expires=1721103820&Signature=b0Q8dmx~xwpY7aas3dl6a1tG03ZmDw~ctb2CWBr~QpsQzD973TsyEIv5u~bNpE4FY2kWwqLtSmkjaMtc4rFhoyjAqzN8UqFaxNaHFoB7ILfCK5MZO0zhbOtK5bWhzkJhxZwqCk6U45cyjhGUR6W4a6KwZk-WPPDw39Bpe-ouwvXwM6rQkwKBSwNJuzuJ0jFySKbHRXDFozlVhtTCfqNVvD7dsekQAsAlxUOlam1N3xAFlPR5TydwDve~bcB6mYC12-NwG-lzfQ~vTyAGiDVpXKWnU1vdVxi8PsbKKdKiqhwzSplNQV4e9VDuRBdiRsLo1ANMEEQ3SsYBCsbO-~UGeA__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
   }
 
   # Function to download the fifth file
   download_file_5() {
-    curl -L -o Snare-MSSQL-Agent-v5.8.1-x64.exe "https://d2h0h41a2pqwb5.cloudfront.net/Snare-MSSQL-Agent-v5.8.1-x64.exe?Expires=1721103836&Signature=OzCcaBit8Oak87ZFR~60E8x5xins7RLC7vul-mXJnEkdehNvWebwViDFTTYAJLKrPDH5vwql7-Q7eM7wqQbK~A0Dh8ktembn0MQq02iR06r5dDKzKBmsUeIKXlrIP1rEkClWba1RaBluDSYSLRIdUoKvzL9DNSFot1zTVU4ALTsa7DPkuojEISgbtMP4-X5k0y6NJBg3uepFuoMOwdASB8Hmu7a~dMQCJYQT5wAt-EKdG76xWeAHMFTlekvQcYibkI9j~p5IqQsqOSsew3KhfGDjwQsYCVsxdcqjMRp5zIEvd1sQQ0rwIXGflb4t16jMrDD~xiBUdYHJjtaJMpKpAw__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
+    curl -L -o $download_dir/Snare-MSSQL-Agent-v5.8.1-x64.exe "https://d2h0h41a2pqwb5.cloudfront.net/Snare-MSSQL-Agent-v5.8.1-x64.exe?Expires=1721103836&Signature=OzCcaBit8Oak87ZFR~60E8x5xins7RLC7vul-mXJnEkdehNvWebwViDFTTYAJLKrPDH5vwql7-Q7eM7wqQbK~A0Dh8ktembn0MQq02iR06r5dDKzKBmsUeIKXlrIP1rEkClWba1RaBluDSYSLRIdUoKvzL9DNSFot1zTVU4ALTsa7DPkuojEISgbtMP4-X5k0y6NJBg3uepFuoMOwdASB8Hmu7a~dMQCJYQT5wAt-EKdG76xWeAHMFTlekvQcYibkI9j~p5IqQsqOSsew3KhfGDjwQsYCVsxdcqjMRp5zIEvd1sQQ0rwIXGflb4t16jMrDD~xiBUdYHJjtaJMpKpAw__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
   }
 
   # Function to download the sixth file
   download_file_6() {
-    curl -L -o MSI-3.1.1.zip "https://d2h0h41a2pqwb5.cloudfront.net/MSI-3.1.1.zip?Expires=1721103861&Signature=YiZPfg8h~Wvpr8lL~ty32ufRQWGqEYaJSl0ke~CA7IUCSkWT6XqEvgBD1LUnapdG7b0zhvDgHVWdkZOMnpVThPW22QGSVRLN5paukb-zLf3jqS-qW-JW31cY1TQCG4BTJvT2oUr-9B4~kU~jxK5x74euQVvTLTyZc8p~2e9rfwnlsaUaEDLQ4aUyz18uJbcTz~aRUjt9eS6OyV5j01KANgSg-e~2cmcGgIcrTuK7gc4imFIYIC2fDLy0LSWjCdEvTi3pe2zZPe0uvA4ipC474sTrnmW5ZjHNfS-ZjeVXerA1AgfttCkKHwgV9qHHrvu3-OdCv7apnPGwYRwiK81FzQ__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
+    curl -L -o $download_dir/MSI-3.1.1.zip "https://d2h0h41a2pqwb5.cloudfront.net/MSI-3.1.1.zip?Expires=1721103861&Signature=YiZPfg8h~Wvpr8lL~ty32ufRQWGqEYaJSl0ke~CA7IUCSkWT6XqEvgBD1LUnapdG7b0zhvDgHVWdkZOMnpVThPW22QGSVRLN5paukb-zLf3jqS-qW-JW31cY1TQCG4BTJvT2oUr-9B4~kU~jxK5x74euQVvTLTyZc8p~2e9rfwnlsaUaEDLQ4aUyz18uJbcTz~aRUjt9eS6OyV5j01KANgSg-e~2cmcGgIcrTuK7gc4imFIYIC2fDLy0LSWjCdEvTi3pe2zZPe0uvA4ipC474sTrnmW5ZjHNfS-ZjeVXerA1AgfttCkKHwgV9qHHrvu3-OdCv7apnPGwYRwiK81FzQ__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
   }
 
   # Function to download the seventh file
   download_file_7() {
-    curl -L -o Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb "https://d2h0h41a2pqwb5.cloudfront.net/Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb?Expires=1721103937&Signature=ih9smMa~6eFmWxv4UmPaMj8~U8p-Nw~m2NWBpA13Qi9AZbTnfs-ABzC4bIwBS9ItfdSgOXe0VEcE~UYV99BmjNARry5aE3U0KrSViRMUnCpY39Qj~jpzsBCbGb0GYDThGUTYpteDP664b~Tu1iYf0uDux5og1HF6sbBnrDQ2481RU8zWArGnhZLl~ggopVSLF2rKSGQY~ZNp7RXQnTdGIJ-lgEPe61KISZuie8qJUN34opapjMuaDEs-T7LwBxqhroKsbqjCo9ooOW9S9hqdQCbY8wMM1xNmeWnh198ZdqSU6THcBhDrxDT-MKg~WLEddzd07ElE2lc-1bgqpHnatg__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
+    curl -L -o $download_dir/Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb "https://d2h0h41a2pqwb5.cloudfront.net/Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb?Expires=1721103937&Signature=ih9smMa~6eFmWxv4UmPaMj8~U8p-Nw~m2NWBpA13Qi9AZbTnfs-ABzC4bIwBS9ItfdSgOXe0VEcE~UYV99BmjNARry5aE3U0KrSViRMUnCpY39Qj~jpzsBCbGb0GYDThGUTYpteDP664b~Tu1iYf0uDux5og1HF6sbBnrDQ2481RU8zWArGnhZLl~ggopVSLF2rKSGQY~ZNp7RXQnTdGIJ-lgEPe61KISZuie8qJUN34opapjMuaDEs-T7LwBxqhroKsbqjCo9ooOW9S9hqdQCbY8wMM1xNmeWnh198ZdqSU6THcBhDrxDT-MKg~WLEddzd07ElE2lc-1bgqpHnatg__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
+  }
+
+  # Function to download the eighth file
+  download_file_8() {
+    curl -L -o $download_dir/SnareAM-v2.0.1-x64.msi "https://d2h0h41a2pqwb5.cloudfront.net/SnareAM-v2.0.1-x64.msi?Expires=1721105428&Signature=XnyGPjv1gzZ9yvL2XkXq~4z6NsGZ~7Q5raK0MrlUfXOooTTNKEHvtOVB2yQD9X7DC3OdK16ud1CZUCUEav8fWdbJ0a3CZpAJrTV7EoGbB-w-uaygYZxmDf7aDon7f3uYD4mdsHG86UnUEGCBqytyAU4dPnZeFGod1SxTYK0MM~N~eAUvzKhsEnyzF9g-wOinK4XGmx7UAJivS9n3Y-QIl56rcO7VUT2Wv6amtPU7tSOcZuy0FCOu0SKr6KVmCvyuk0ByWBVjzl9-aC9AakcS9xN42Dp4ZlZSY00kkVCwbvfd9cUbW3rHsGYzPYdZKK5rimL70qvMsTp9vm~fn2WjjQ__&Key-Pair-Id=APKAITOCECNGLUTIRXIQ"
   }
 
   # Prompt user for which files to download
@@ -216,8 +224,9 @@ download_snare_files() {
   echo "5) Snare-MSSQL-Agent-v5.8.1-x64.exe"
   echo "6) MSI-3.1.1.zip"
   echo "7) Snare-Ubuntu-22-Agent-v5.8.1-1-x64.deb"
-  echo "8) All files"
-  read -p "Enter your choice (1/2/3/4/5/6/7/8): " choice
+  echo "8) SnareAM-v2.0.1-x64.msi"
+  echo "9) All files"
+  read -p "Enter your choice (1/2/3/4/5/6/7/8/9): " choice
 
   # Download the selected files
   case $choice in
@@ -250,6 +259,10 @@ download_snare_files() {
       download_file_7
       ;;
     8)
+      echo "Downloading SnareAM-v2.0.1-x64.msi..."
+      download_file_8
+      ;;
+    9)
       echo "Downloading all files..."
       download_file_1
       download_file_2
@@ -258,6 +271,7 @@ download_snare_files() {
       download_file_5
       download_file_6
       download_file_7
+      download_file_8
       ;;
     *)
       echo "Invalid choice. Please run the script again and select a valid option."
