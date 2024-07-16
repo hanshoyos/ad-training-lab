@@ -1,0 +1,24 @@
+---
+- name: Run PowerShell script to configure GPO
+  hosts: DC
+  become: yes
+  tasks:
+    - name: Copy PowerShell script to Windows host
+      win_copy:
+        src: /path/to/map_network_drive.ps1
+        dest: C:\Temp\map_network_drive.ps1
+
+    - name: Ensure PowerShell script is executable
+      win_shell: |
+        $path = "C:\Temp\map_network_drive.ps1"
+        if ((Get-Item $path).Attributes -notmatch "ReadOnly") {
+          Set-ItemProperty -Path $path -Name Attributes -Value ((Get-Item $path).Attributes -bxor [System.IO.FileAttributes]::ReadOnly)
+        }
+
+    - name: Run PowerShell script as admin
+      win_command: powershell.exe -ExecutionPolicy Bypass -File C:\Temp\map_network_drive.ps1
+      register: ps_script_output
+
+    - name: Display PowerShell script output
+      debug:
+        var: ps_script_output.stdout_lines
