@@ -5,7 +5,7 @@ linux:
     ansible_sudo_pass: ubuntu
     ansible_shell_type: sh
   hosts:
-    monitoring:
+    ubuntu:
       ansible_host: <ip_address>
 
 windows:
