@@ -80,16 +80,6 @@
       debug:
         msg: "Mapping shared folder to Z: drive with path \\\\fs.{{ domain_name }}\\SharedFolder"
 
-    - name: Map shared folder
-      community.windows.win_mapped_drive:
-        letter: 'Z'
-        path: \\fs.{{ domain_name }}\SharedFolder
-        state: present
-
-    - name: Debug final reboot initiation
-      debug:
-        msg: "Rebooting the server to apply all configurations"
-
     - name: Force reboot the server after all tasks are done
       win_reboot:
       register: final_reboot_status
