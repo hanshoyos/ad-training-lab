@@ -5,7 +5,7 @@ linux:
     ansible_sudo_pass: ubuntu
     ansible_shell_type: sh
   hosts:
-%{ for name, ip in ubuntu_ips ~}
+%{ for name, ip in linux_ips ~}
     ${name}:
       ansible_host: ${ip}
 %{ endfor ~}
