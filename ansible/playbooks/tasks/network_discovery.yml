@@ -1,0 +1,43 @@
+---
+- name: Enable Network Discovery on all Windows hosts
+  hosts: all_windows  # Update this to match your inventory group
+  become: yes
+  tasks:
+    - name: Ensure the WinRM service is running and configured
+      win_feature:
+        name: "Windows-RemoteManagement"
+        state: present
+
+    - name: Start the WinRM service
+      win_service:
+        name: WinRM
+        start_mode: auto
+        state: started
+
+    - name: Enable network discovery via PowerShell
+      win_powershell:
+        script: |
+          function Enable-NetworkDiscovery {
+            param (
+              [string]$Profile = 'All'
+            )
+
+            $networkCategory = Get-NetConnectionProfile | Where-Object { $_.NetworkCategory -eq 'Public' -or $_.NetworkCategory -eq 'Private' -or $_.NetworkCategory -eq 'DomainAuthenticated' }
+            foreach ($profile in $networkCategory) {
+              $profileName = $profile.Name
+              if ($Profile -eq 'All' -or $Profile -eq $profileName) {
+                Write-Host "Enabling Network Discovery on profile: $profileName"
+                Set-NetConnectionProfile -Name $profileName -NetworkCategory Private
+                Set-NetFirewallRule -DisplayGroup "Network Discovery" -Enabled True
+                Get-NetFirewallRule -DisplayGroup "Network Discovery" | Set-NetFirewallRule -Profile Domain,Private -Enabled True
+                Set-Service -Name "fdrespub" -StartupType Automatic
+                Start-Service -Name "fdrespub"
+                Set-Service -Name "upnphost" -StartupType Automatic
+                Start-Service -Name "upnphost"
+                Set-Service -Name "ssdpsrv" -StartupType Automatic
+                Start-Service -Name "ssdpsrv"
+              }
+            }
+          }
+
+          Enable-NetworkDiscovery
