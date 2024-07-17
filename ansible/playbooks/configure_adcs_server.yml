@@ -55,16 +55,6 @@
         timeout: 600
       when: domain_reboot_status.changed
 
-    - name: Debug mapped drive parameters
-      debug:
-        msg: "Mapping shared folder to Z: drive with path \\\\fs.{{ domain_name }}\\SharedFolder"
-
-    - name: Map shared folder
-      community.windows.win_mapped_drive:
-        letter: 'Z'
-        path: \\fs.{{ domain_name }}\SharedFolder
-        state: present
-
     - name: Debug autologon parameters
       debug:
         msg: "Setting autologon for user {{ snare_admin_login }}"
