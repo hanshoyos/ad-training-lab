@@ -1,6 +1,6 @@
 ---
 - name: Enable Network Discovery on all Windows hosts
-  hosts: all_windows  # Update this to match your inventory group
+  hosts: windows  # Update this to match your inventory group
   become: yes
   tasks:
     - name: Ensure the WinRM service is running and configured
