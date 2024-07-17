@@ -1,0 +1,11 @@
+---
+- name: Update DNS IP address on all Windows hosts except DC
+  hosts: windows
+  gather_facts: no
+  tasks:
+    - name: Update DNS IP address
+      win_dns_client:
+        adapter_names: '*'
+        dns_servers:
+          - "{{ hostvars['DC']['ansible_host'] }}"
+      when: inventory_hostname != 'DC'
