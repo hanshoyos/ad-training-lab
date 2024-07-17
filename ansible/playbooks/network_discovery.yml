@@ -1,0 +1,19 @@
+---
+- name: Enable Network Discovery on all Windows hosts
+  hosts: windows
+  gather_facts: no
+  tasks:
+    - name: Debug Host Information
+      debug:
+        msg: "Running on host {{ inventory_hostname }} with IP {{ ansible_host }}"
+
+    - name: Enable network discovery via PowerShell
+      raw: |
+        $user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+        Write-Host "Current User: $user"
+        Start-Process powershell.exe -ArgumentList '-Command "Set-NetConnectionProfile -NetworkCategory Private; Enable-NetFirewallRule -DisplayGroup ''Network Discovery''"' -Verb RunAs
+      register: network_discovery_result
+
+    - name: Debug Network Discovery Result
+      debug:
+        var: network_discovery_result
