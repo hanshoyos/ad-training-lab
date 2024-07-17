@@ -75,7 +75,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
   } 
 
   memory {
-    dedicated = each.key == "monitoring" ? 2048 : local.default_vm_config.memory
+    dedicated = each.key == "ubuntu" ? 2048 : local.default_vm_config.memory
   }
 
   cpu {
