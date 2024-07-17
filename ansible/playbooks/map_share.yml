@@ -1,0 +1,13 @@
+---
+- name: Map shared folder on all Windows hosts
+  hosts: windows
+  tasks:
+    - name: Debug mapped drive parameters
+      debug:
+        msg: "Mapping shared folder to Z: drive with path \\\\fs.{{ domain_name }}\\SharedFolder"
+
+    - name: Map shared folder
+      community.windows.win_mapped_drive:
+        letter: 'Z'
+        path: '\\\\fs.{{ domain_name }}\\SharedFolder'
+        state: present
